@@ -24,7 +24,6 @@ function register(app) {
           answer: potRequestRepository.POT_REQUEST_PLAYER_ANSWERS.AWAITING
         }));
 
-    console.log('Participants. ', JSON.stringify(participantsAnswers, null, 2));
     
     await potRequestService.createPotRequest(tableId, gameId, playerId, participantsAnswers);
     console.log('Pot request was created!');
