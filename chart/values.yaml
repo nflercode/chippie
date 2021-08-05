@@ -1,0 +1,14 @@
+pr: null
+environment: local
+
+image:
+  repository: nfler/chippie
+  pullPolicy: Always
+  tag: latest
+
+secrets:
+  db_password: ''
+
+service:
+  port: 80
+
