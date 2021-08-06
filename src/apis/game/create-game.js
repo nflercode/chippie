@@ -25,6 +25,8 @@ function register(app) {
                             isCurrentTurn: i === 1,
                             chips: startingChips
                           }));
+
+    console.log('Creating game with ', participants.length, 'participants');
     const game = await gameService.createGame(tableId, participants);
     console.log('Created game!', game.id);
 

@@ -31,7 +31,13 @@ function handleDelete(event) {
 async function handleCreate(event) {
   const { tableId } = event.doc;
   const room = getRoomName(tableId);
-  io.to(room).emit('game-created', event.doc);
+  console.log('Sending game created notification to room', room);
+  try {
+    io.to(room).emit('game-created', event.doc);
+    console.log('Successfully sent game created notification, to', room);
+  } catch (err) {
+    console.error('Failed to send created game notification', err);
+  }
 }
 
 function handleUpdate(event) {
