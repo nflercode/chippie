@@ -13,10 +13,10 @@ function connect(httpServer, allowedOrigins) {
     cors: {
       origin: allowedOrigins,
       methods: ["GET"]
-    }
+    },
+    path: '/chippie/socket'
   });
 
-  io = io.of('/chippie');
   io.use(jwtAuth);
 
   io.on('connection', (socket) => {
