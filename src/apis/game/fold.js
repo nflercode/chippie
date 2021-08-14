@@ -1,16 +1,16 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import raiseHandler from '../../handlers/raise-handler.js';
-import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import foldHandler from '../../handlers/fold-handler.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 
 function register(app) {
-  app.post(`/${API_PREFIX}/game/raise`, jwtAuth, async (req, res) => {
+  app.post(`/${API_PREFIX}/game/:gameId/fold`, jwtAuth, async (req, res) => {
+    const { gameId } = req.params;
     const { playerId } = req.auth;
-    const { gameId, chips } = req.body;
 
     try {
-      await raiseHandler.doRaise(gameId, playerId, chips);
+      await foldHandler.doFold(playerId, gameId);
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res
@@ -22,9 +22,9 @@ function register(app) {
       return res.status(API_STATUS_CODES.INTERNAL_ERROR).send('Unexpected error occured');
     }
 
-    res.sendStatus(200);
+    return res.sendStatus(200);
   });
 }
 
-const raiseApi = { register };
-export default raiseApi;
+const foldApi = { register };
+export default foldApi;

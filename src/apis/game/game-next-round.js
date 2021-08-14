@@ -1,16 +1,16 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import raiseHandler from '../../handlers/raise-handler.js';
+import gameHandler from '../../handlers/game-handler.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 
 function register(app) {
-  app.post(`/${API_PREFIX}/game/raise`, jwtAuth, async (req, res) => {
-    const { playerId } = req.auth;
-    const { gameId, chips } = req.body;
+  app.post(`/${API_PREFIX}/game/:gameId/round/next`, jwtAuth, async (req, res) => {
+    const { tableId, playerId } = req.auth;
+    const { gameId } = req.params;
 
     try {
-      await raiseHandler.doRaise(gameId, playerId, chips);
+      await gameHandler.nextRound(gameId, playerId);
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res
@@ -26,5 +26,5 @@ function register(app) {
   });
 }
 
-const raiseApi = { register };
-export default raiseApi;
+const gameNextRoundApi = { register };
+export default gameNextRoundApi;

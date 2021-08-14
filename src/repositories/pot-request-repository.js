@@ -2,24 +2,12 @@ import thinky from 'thinky';
 import dbConfig from './rdbConfig.js';
 import { Subject } from 'rxjs';
 import { handleFeed } from './helpers.js';
+import { POT_REQUEST_STATUS } from '../constants/pot-request-status.js';
+import { POT_REQUEST_PLAYER_ANSWERS } from '../constants/pot-request-player-answers.js';
 
 const subject = new Subject();
 const t = thinky(dbConfig);
 const r = t.r;
-
-const POT_REQUEST_STATUS = {
-  UNDEFINED: "UNDEFINED",
-  AWAITING: "AWAITING",
-  APPROVED: "APPROVED",
-  REJECTED: "REJECTED"
-}
-
-const POT_REQUEST_PLAYER_ANSWERS = {
-  UNDEFINED: "UNDEFINED",
-  AWAITING: "AWAITING",
-  OK: "OK",
-  NO: "NO"
-}
 
 const PotRequest = t.createModel('PotRequest', {
   id: t.type.string(),
@@ -65,9 +53,6 @@ const potRequestRepository = {
   getByGameId,
   updatePotRequest,
   getRequest,
-  POT_REQUEST_STATUS,
-  POT_REQUEST_PLAYER_ANSWERS,
   subject
-
 }
 export default potRequestRepository;

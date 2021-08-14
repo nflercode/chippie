@@ -2,19 +2,11 @@ import thinky from 'thinky';
 import dbConfig from './rdbConfig.js';
 import { Subject } from 'rxjs';
 import { handleFeed } from './helpers.js';
+import { PLAYER_ACTIONS } from '../constants/player-actions.js';
 
 const subject = new Subject();
 const t = thinky(dbConfig);
 const r = t.r;
-
-const PLAYER_ACTIONS = {
-  UNDEFINED: "UNDEFINED",
-  FOLD: "FOLD",
-  CHECK: "CHECK",
-  CALL: "CALL",
-  RAISE: "RAISE",
-  RERAISE: "RERAISE"
-}
 
 const Action = t.createModel('Action', {
   id: t.type.string(),
@@ -45,5 +37,5 @@ async function getAllActionsForPlayer(playerId) {
 
 Action.changes().then(feed => handleFeed(feed, subject));
 
-const actionRepository = { createAction, getAllActionsForPlayer, PLAYER_ACTIONS, subject }
+const actionRepository = { createAction, getAllActionsForPlayer, subject }
 export default actionRepository;

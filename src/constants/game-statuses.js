@@ -1,0 +1,6 @@
+export const GAME_STATUSES = {
+  UNDEFINED: "UNDEFINED",
+  ONGOING: "ONGOING",
+  ENDED: "ENDED",
+  CLOSED: "CLOSED"
+};
