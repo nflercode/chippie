@@ -1,29 +1,30 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import gameService from '../../services/game-service.js';
-import gameRepository from '../../repositories/game-repository.js';
+import gameHandler from '../../handlers/game-handler.js';
+import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 
 function register(app) {
-  app.put(`/${API_PREFIX}/game/:gameId/close`, jwtAuth, async (req, res) => {
+  app.post(`/${API_PREFIX}/game/:gameId/close`, jwtAuth, async (req, res) => {
     const { gameId } = req.params;
     const { playerId } = req.auth;
 
-    let game = await gameService.getGame(gameId);
-    if (!game) {
-      return res.status(400).send(createErrorPayload('No game was found'));
-    }
+    try {
+      await gameHandler.closeGame(gameId, playerId);
+    } catch (err) {
+      if (err instanceof ClientFriendlyException) {
+        return res
+          .status(err.statusCode)
+          .send(createErrorPayload(err.message));
+      }
 
-    const isMember = gameService.participants.find((p) => p.playerId === playerId);
-    if (!isMember) {
-      return res.status(400).send(createErrorPayload('You are not allowed to close this game.'));
+      console.error(err);
+      return res.status(API_STATUS_CODES.INTERNAL_ERROR).send('Unexpected error occured');
     }
-
-    game.status = gameRepository.GAME_STATUSES.ENDED;
-    await gameService.updateGame(game);
 
     res.sendStatus(200);
   });
 }
 
-const createGameApi = { register };
-export default createGameApi;
+const closeGameApi = { register };
+export default closeGameApi;

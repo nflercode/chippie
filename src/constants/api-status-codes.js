@@ -1,0 +1,7 @@
+const API_STATUS_CODES = {
+  BAD_REQUEST: 400,
+  NOT_FOUND: 404,
+  INTERNAL_ERROR: 500
+}
+
+export default API_STATUS_CODES;

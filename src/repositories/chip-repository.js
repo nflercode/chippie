@@ -1,16 +1,8 @@
 import thinky from 'thinky';
+import { CHIP_TYPES } from '../constants/chip-types.js';
 import dbConfig from './rdbConfig.js';
 
 const t = thinky(dbConfig);
-
-const CHIP_TYPES = {
-  UNDEFINED: "UNDEFINED",
-  WHITE: "WHITE",
-  RED: "RED",
-  BLUE: "BLUE",
-  GREEN: "GREEN",
-  BLACK: "BLACK"
-}
 
 const Chip = t.createModel('Chip', {
   id: t.type.string(),

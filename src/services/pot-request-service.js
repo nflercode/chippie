@@ -9,12 +9,10 @@ async function createPotRequest(tableId, gameId, playerId, participantAnswers) {
   }
 }
 
-async function findOngoingRequest(gameId) {
+async function findRequestsForGame(gameId) {
   try {
     const requests = await potRequestRepository.getByGameId(gameId);
-    return requests.filter(
-      (request) =>
-      request.status === potRequestRepository.POT_REQUEST_STATUS.AWAITING);
+    return requests;
   } catch (err) {
     console.error('Failed to find ongoing request', err);
   }
@@ -36,5 +34,5 @@ async function updateRequest(request) {
   }
 }
 
-const potRequestService = { createPotRequest, findOngoingRequest, updateRequest, getRequest }
+const potRequestService = { createPotRequest, findRequestsForGame, updateRequest, getRequest }
 export default potRequestService;

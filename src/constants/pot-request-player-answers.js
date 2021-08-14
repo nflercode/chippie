@@ -1,0 +1,6 @@
+export const POT_REQUEST_PLAYER_ANSWERS = {
+  UNDEFINED: "UNDEFINED",
+  AWAITING: "AWAITING",
+  OK: "OK",
+  NO: "NO"
+};
