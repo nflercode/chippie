@@ -1,7 +1,7 @@
 {
   "name": "chippie",
   "version": "1.0.0",
-  "description": "game api for nfler",
+  "description": "game api for mychip.online",
   "main": "index.js",
   "type": "module",
   "scripts": {

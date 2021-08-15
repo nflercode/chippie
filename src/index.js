@@ -22,12 +22,12 @@ if (assumeLocal()) {
 
 if (isProductionEnvironment()) {
   console.log('starting as production');
-  allowedOrigins.push(/https:\/\/nfler.se/);
+  allowedOrigins.push(/https:\/\/mychips.online/);
 }
 
 if (isPrEnvironment()) {
   console.log('starting as prenv');
-  allowedOrigins.push(/https:\/\/pr-\d+.nfler.se/);
+  allowedOrigins.push(/https:\/\/pr-\d+.mychips.online/);
   allowedOrigins.push(/http:\/\/localhost:\d+/);
 }
 
