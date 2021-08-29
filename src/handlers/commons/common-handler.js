@@ -1,7 +1,6 @@
-import API_STATUS_CODES from "../constants/api-status-codes.js";
-import gameService from "../services/game-service.js";
-import actionService from "../services/action-service.js";
-import { ClientFriendlyException } from "../exceptions/ClientFriendlyException.js";
+import API_STATUS_CODES from "../../constants/api-status-codes.js";
+import gameService from "../../services/game-service.js";
+import { ClientFriendlyException } from "../../exceptions/ClientFriendlyException.js";
 
 async function getGame(gameId) {
   const game = await gameService.getGame(gameId);
@@ -109,43 +108,11 @@ function assertIsCurrentTurn(participant) {
   }
 }
 
-async function createAction(gameId, playerId, chips, action) {
-  const newAction = await actionService.createAction(gameId, playerId, chips, action);
-  if (!newAction) {
-    console.error(`Failed to create action for game: ${gameId}`);
-    throw ClientFriendlyException(
-      'Failed to create action',
-      API_STATUS_CODES.INTERNAL_ERROR
-    );
-  }
-}
-
-function addChips(chips, chipsToAdd) {
-  let chipsAdded = chips;
-
-  chipsToAdd.forEach(chipToAdd => {
-    const chipIndex = chipsAdded.findIndex(c => c.chipId === chipToAdd.chipId);
-    let chip = chipIndex === -1 ? { chipId: chipToAdd.chipId, amount: 0 } : chipsAdded[chipIndex];
-
-    chip.amount = chip.amount + chipToAdd.amount;
-
-    if (chipIndex === -1) {
-      chipsAdded.push(chip)
-    } else {
-      chipsAdded[chipIndex] = chip;
-    }
-  });
-
-  return chipsAdded;
-}
-
 const commonHandler = {
   getGame,
   updateGame,
   getParticipantIndex,
   assertIsCurrentTurn,
-  switchParticipantTurn,
-  createAction,
-  addChips
+  switchParticipantTurn
 };
 export default commonHandler;

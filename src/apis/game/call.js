@@ -1,11 +1,11 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import raiseHandler from '../../handlers/raise-handler.js';
-import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import callHandler from '../../handlers/call-handler.js';
 
 function register(app) {
-  app.post(`/${API_PREFIX}/game/:gameId/raise`, jwtAuth, async (req, res) => {
+  app.post(`/${API_PREFIX}/game/:gameId/call`, jwtAuth, async (req, res) => {
     const { gameId } = req.params;
     const { playerId } = req.auth;
     const { chips } = req.body;
@@ -17,7 +17,7 @@ function register(app) {
     }
 
     try {
-      await raiseHandler.doRaise(gameId, playerId, chips);
+      await callHandler.doCall(gameId, playerId, chips);
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res
@@ -33,5 +33,5 @@ function register(app) {
   });
 }
 
-const raiseApi = { register };
-export default raiseApi;
+const callApi = { register };
+export default callApi;

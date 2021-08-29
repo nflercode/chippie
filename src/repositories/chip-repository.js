@@ -43,5 +43,5 @@ async function getAllChips() {
   return Chip.run();
 }
 
-const chipRepository = { createDefaultChips, getAllChips, CHIP_TYPES, Chip }
+const chipRepository = { createDefaultChips, getAllChips, Chip }
 export default chipRepository;

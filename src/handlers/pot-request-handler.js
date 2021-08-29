@@ -3,7 +3,8 @@ import { POT_REQUEST_PLAYER_ANSWERS } from "../constants/pot-request-player-answ
 import { POT_REQUEST_STATUS } from "../constants/pot-request-status.js";
 import { ClientFriendlyException } from "../exceptions/ClientFriendlyException.js";
 import potRequestService from "../services/pot-request-service.js";
-import commonHandler from "./common-handler.js";
+import chipsCommonHandler from "./commons/chips-common-handler.js";
+import commonHandler from "./commons/common-handler.js";
 import gameHandler from "./game-handler.js";
 
 async function createPotRequest(gameId, playerId) {
@@ -18,7 +19,14 @@ async function createPotRequest(gameId, playerId) {
   const game = await commonHandler.getGame(gameId);
 
   // Assert is member of game
-  commonHandler.getParticipantIndex(game.participants, playerId);
+  const participantIndex = commonHandler.getParticipantIndex(game.participants, playerId);
+  const isParticipating = game.participants[participantIndex].isParticipating;
+  if (!isParticipating) {
+    throw new ClientFriendlyException(
+      'You must be participating in this round to request the pot',
+      API_STATUS_CODES.BAD_REQUEST
+    );
+  }
 
   const participantsAnswers = game
     .participants
@@ -41,8 +49,8 @@ async function updatePotRequest(potRequestId, tableId, playerId, answer) {
     );
   }
 
-  const participantAnswer = potRequest.participantAnswers[participantAnswerIndex].answer;
-  if (participantAnswer !== POT_REQUEST_PLAYER_ANSWERS.AWAITING) {
+  const answeringParticipant = potRequest.participantAnswers[participantAnswerIndex];
+  if (answeringParticipant.answer !== POT_REQUEST_PLAYER_ANSWERS.AWAITING) {
     throw new ClientFriendlyException(
       'Participant has already answered',
       API_STATUS_CODES.BAD_REQUEST
@@ -57,7 +65,7 @@ async function updatePotRequest(potRequestId, tableId, playerId, answer) {
     );
   }
 
-  potRequest.participantAnswers[participantAnswerIndex].answer = givenAnswer;
+  answeringParticipant.answer = givenAnswer;
 
   let game;
   if (givenAnswer === POT_REQUEST_PLAYER_ANSWERS.NO) {
@@ -74,16 +82,15 @@ async function updatePotRequest(potRequestId, tableId, playerId, answer) {
         game.participants.findIndex(p => p.playerId === potRequest.playerId);
       const payoutParticipant = game.participants[payoutParticipantIndex];
 
-      payoutParticipant.chips = commonHandler.addChips(payoutParticipant.chips, game.pot)
-      game.participants[payoutParticipantIndex] = payoutParticipant;
+      chipsCommonHandler.addChips(payoutParticipant.chips, game.pot)
 
       game.pot = [];
     }
   }
+
   await potRequestService.updateRequest(potRequest);
   if (game)
     await commonHandler.updateGame(game);
-
 }
 
 async function getOngoingPotRequest(gameId, playerId) {
