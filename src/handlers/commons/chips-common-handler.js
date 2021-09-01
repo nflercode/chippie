@@ -65,7 +65,7 @@ function mapBettingChipWithValue(bettingChips, actualChips) {
   });
 }
 
-function getTotalValueFromChips(chips) {
+function getTotalValueFromChips(chips = []) {
   return chips.reduce((acc, curr) => acc + (curr.value * curr.amount), 0);
 }
 

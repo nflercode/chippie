@@ -76,7 +76,7 @@ async function nextRound(gameId, playerId) {
 
     return {
       ...p,
-      isParticipating: true,
+      isParticipating: !p.chips.every(chip => chip.amount === 0),
       isCurrentTurn: nextTurnOrder === minTurnOrder,
       turnOrder: nextTurnOrder
     }

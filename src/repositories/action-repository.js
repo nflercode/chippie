@@ -18,7 +18,6 @@ const Action = t.createModel('Action', {
     amount: t.type.number()
   })),
   totalValue: t.type.number(),
-  raisedValue: t.type.number(),
   createdAt: t.type.date().default(Date.now)
 });
 

@@ -9,8 +9,8 @@ function register(app) {
     const { gameId, round } = req.params;
 
     try {
-      const actions = await actionsCommonHandler.findGameActionsForRound(gameId, round);
-      return res.send({ actions });
+      const actions = await actionsCommonHandler.findGameActionsForRound(gameId, +round);
+      res.send({ actions });
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res
