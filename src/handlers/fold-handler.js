@@ -1,5 +1,9 @@
 import { PLAYER_ACTIONS } from '../constants/player-actions.js';
-import commonHandler from './common-handler.js';
+import commonHandler from './commons/common-handler.js';
+import actionsCommonHandler from './commons/actions-common-handler.js';
+import rules from './rules.js';
+import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
+import API_STATUS_CODES from '../constants/api-status-codes.js';
 
 async function doFold(playerId, gameId) {
   console.log(`Performing fold for player ${playerId}`);
@@ -11,18 +15,32 @@ async function doFold(playerId, gameId) {
 
   const participant = game.participants[participantIndex];
   commonHandler.assertIsCurrentTurn(participant);
+
+  const gameActions = await actionsCommonHandler.findGameActionsForRound(gameId, game.round);
+  if (!rules.canIFold(gameActions)) {
+    throw new ClientFriendlyException(
+      'You can not fold',
+      API_STATUS_CODES.BAD_REQUEST
+    );
+  }
    
-  game.participants[participantIndex].isParticipating = false;
+  participant.isParticipating = false;
+  commonHandler.switchParticipantTurn(game.participants, participantIndex);
 
-  const participantsWithSwitchedTurns =
-    commonHandler.switchParticipantTurn(game.participants, participantIndex);
-
-  game.participants = participantsWithSwitchedTurns;
+  const newAction = {
+    gameId,
+    playerId,
+    actionType: PLAYER_ACTIONS.FOLD,
+    gameRound: game.round,
+    chips: [],
+    totalValue: 0,
+    raisedValue: 0
+  };
 
   await commonHandler.updateGame(game);
   console.log(`Successfully updated game ${gameId}`);
 
-  await commonHandler.createAction(gameId, playerId, [], PLAYER_ACTIONS.FOLD);
+  await actionsCommonHandler.createAction(newAction);
   console.log(`Successfully created action, type: "${PLAYER_ACTIONS.FOLD}" for player: ${playerId}`);
 }
 

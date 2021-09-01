@@ -10,6 +10,8 @@ import getAwaitingPotRequestApi from './game/get-ongoing-pot-request.js';
 import foldApi from './game/fold.js';
 import closeGameApi from './game/close-game.js';
 import gameNextRoundApi from './game/game-next-round.js';
+import callApi from './game/call.js';
+import gameRoundActionsApi from './game/game-round-actions.js';
 
 function loadApis(app) {
   getChips.register(app);
@@ -24,6 +26,8 @@ function loadApis(app) {
   foldApi.register(app);
   closeGameApi.register(app);
   gameNextRoundApi.register(app);
+  callApi.register(app);
+  gameRoundActionsApi.register(app);
 }
 
 const apiLoader = { loadApis };

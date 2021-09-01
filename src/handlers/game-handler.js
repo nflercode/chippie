@@ -5,7 +5,7 @@ import gameService from "../services/game-service.js";
 import playerService from "../services/player-service.js";
 import chipService from "../services/chip-service.js";
 import { DEFAULT_DISTRIBUTION } from "./chip-distribution-configs.js";
-import commonHandler from "./common-handler.js";
+import commonHandler from "./commons/common-handler.js";
 
 async function createGame(tableId, playerId) {
   const ongoingGame = await _getOngoingGame(tableId);
@@ -24,8 +24,8 @@ async function createGame(tableId, playerId) {
     )
   }
 
-  const startingChips = await getStartingChips();
-  const participants = createParticipants(players, startingChips);
+  const startingChips = await _getStartingChips();
+  const participants = _createParticipants(players, startingChips);
 
   await gameService.createGame(tableId, participants, playerId);
 }
@@ -76,7 +76,7 @@ async function nextRound(gameId, playerId) {
 
     return {
       ...p,
-      isParticipating: true,
+      isParticipating: !p.chips.every(chip => chip.amount === 0),
       isCurrentTurn: nextTurnOrder === minTurnOrder,
       turnOrder: nextTurnOrder
     }
@@ -104,7 +104,7 @@ async function _getOngoingGame(tableId) {
   );
 }
 
-async function getStartingChips() {
+async function _getStartingChips() {
   const allChips = await chipService.getAllChips();
   if (!allChips || allChips.length === 0) {
     throw new ClientFriendlyException(
@@ -126,7 +126,7 @@ async function getStartingChips() {
   return distributionConfigMerged;
 }
 
-function createParticipants(players, startingChips) {
+function _createParticipants(players, startingChips) {
   const playerIds = players.map((p) => p.id);
   const participants = 
     playerIds

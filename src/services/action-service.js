@@ -1,12 +1,20 @@
 import actionRepository from "../repositories/action-repository.js";
 
-async function createAction(gameId, playerId, chips, actionType) {
+async function createAction(newAction) {
   try {
-    return await actionRepository.createAction(gameId, playerId, chips, actionType);
+    return await actionRepository.createAction(newAction);
   } catch(err) {
-    console.error('Failed to create acion', err);
+    console.error('Failed to create action', err);
   }
 }
 
-const actionService = { createAction };
+async function findActionsForGame(gameId, gameRound) {
+  try {
+    return await actionRepository.findActionsForGame(gameId, gameRound);
+  } catch(err) {
+    console.error('Failed to find actions', err);
+  }
+}
+
+const actionService = { createAction, findActionsForGame };
 export default actionService;
