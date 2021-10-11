@@ -1,6 +1,6 @@
 import potRequestRepository from '../repositories/pot-request-repository.js';
 
-async function createPotRequest(tableId, gameId, playerId, participantAnswers) {
+async function createPotRequest (tableId, gameId, playerId, participantAnswers) {
   try {
     const createPotRequest = await potRequestRepository.createPotRequest(tableId, gameId, playerId, participantAnswers);
     return createPotRequest;
@@ -9,7 +9,7 @@ async function createPotRequest(tableId, gameId, playerId, participantAnswers) {
   }
 }
 
-async function findRequestsForGame(gameId) {
+async function findRequestsForGame (gameId) {
   try {
     const requests = await potRequestRepository.getByGameId(gameId);
     return requests;
@@ -18,7 +18,7 @@ async function findRequestsForGame(gameId) {
   }
 }
 
-async function getRequest(requestId) {
+async function getRequest (requestId) {
   try {
     return await potRequestRepository.getRequest(requestId);
   } catch (err) {
@@ -26,7 +26,7 @@ async function getRequest(requestId) {
   }
 }
 
-async function updateRequest(request) {
+async function updateRequest (request) {
   try {
     return await potRequestRepository.updatePotRequest(request);
   } catch (err) {
@@ -34,5 +34,5 @@ async function updateRequest(request) {
   }
 }
 
-const potRequestService = { createPotRequest, findRequestsForGame, updateRequest, getRequest }
+const potRequestService = { createPotRequest, findRequestsForGame, updateRequest, getRequest };
 export default potRequestService;

@@ -4,11 +4,12 @@ import actionsCommonHandler from './commons/actions-common-handler.js';
 import rules from './rules.js';
 import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../constants/api-status-codes.js';
+import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
 
-async function doFold(playerId, gameId) {
+async function doFold (playerId, gameId) {
   console.log(`Performing fold for player ${playerId}`);
 
-  let game = await commonHandler.getGame(gameId);
+  const game = await commonHandler.getGame(gameId);
 
   const participantIndex =
     commonHandler.getParticipantIndex(game.participants, playerId);
@@ -23,8 +24,8 @@ async function doFold(playerId, gameId) {
       API_STATUS_CODES.BAD_REQUEST
     );
   }
-   
-  participant.isParticipating = false;
+
+  participant.participationStatus = PARTICIPATION_STATUSES.FOLDED;
   commonHandler.switchParticipantTurn(game.participants, participantIndex);
 
   const newAction = {
@@ -33,8 +34,7 @@ async function doFold(playerId, gameId) {
     actionType: PLAYER_ACTIONS.FOLD,
     gameRound: game.round,
     chips: [],
-    totalValue: 0,
-    raisedValue: 0
+    totalValue: 0
   };
 
   await commonHandler.updateGame(game);

@@ -1,13 +1,13 @@
-import API_STATUS_CODES from "../constants/api-status-codes.js";
-import { POT_REQUEST_PLAYER_ANSWERS } from "../constants/pot-request-player-answers.js";
-import { POT_REQUEST_STATUS } from "../constants/pot-request-status.js";
-import { ClientFriendlyException } from "../exceptions/ClientFriendlyException.js";
-import potRequestService from "../services/pot-request-service.js";
-import chipsCommonHandler from "./commons/chips-common-handler.js";
-import commonHandler from "./commons/common-handler.js";
-import gameHandler from "./game-handler.js";
+import API_STATUS_CODES from '../constants/api-status-codes.js';
+import { POT_REQUEST_PLAYER_ANSWERS } from '../constants/pot-request-player-answers.js';
+import { POT_REQUEST_STATUS } from '../constants/pot-request-status.js';
+import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
+import potRequestService from '../services/pot-request-service.js';
+import chipsCommonHandler from './commons/chips-common-handler.js';
+import commonHandler from './commons/common-handler.js';
+import gameHandler from './game-handler.js';
 
-async function createPotRequest(gameId, playerId) {
+async function createPotRequest (gameId, playerId) {
   const ongoingPotRequest = await _getOngoingPotRequest(gameId);
   if (ongoingPotRequest) {
     throw new ClientFriendlyException(
@@ -19,27 +19,20 @@ async function createPotRequest(gameId, playerId) {
   const game = await commonHandler.getGame(gameId);
 
   // Assert is member of game
-  const participantIndex = commonHandler.getParticipantIndex(game.participants, playerId);
-  const isParticipating = game.participants[participantIndex].isParticipating;
-  if (!isParticipating) {
-    throw new ClientFriendlyException(
-      'You must be participating in this round to request the pot',
-      API_STATUS_CODES.BAD_REQUEST
-    );
-  }
+  commonHandler.getParticipantIndex(game.participants, playerId);
 
   const participantsAnswers = game
     .participants
-      .filter(p => p.playerId !== playerId)
-      .map(({ playerId }) => ({
-        playerId,
-        answer: POT_REQUEST_STATUS.AWAITING
-      }));
+    .filter(p => p.playerId !== playerId)
+    .map(({ playerId }) => ({
+      playerId,
+      answer: POT_REQUEST_STATUS.AWAITING
+    }));
 
   await potRequestService.createPotRequest(game.tableId, gameId, playerId, participantsAnswers);
 }
 
-async function updatePotRequest(potRequestId, tableId, playerId, answer) {
+async function updatePotRequest (potRequestId, tableId, playerId, answer) {
   const potRequest = await potRequestService.getRequest(potRequestId);
   const participantAnswerIndex = potRequest.participantAnswers.findIndex(pa => pa.playerId === playerId);
   if (participantAnswerIndex === -1) {
@@ -82,18 +75,20 @@ async function updatePotRequest(potRequestId, tableId, playerId, answer) {
         game.participants.findIndex(p => p.playerId === potRequest.playerId);
       const payoutParticipant = game.participants[payoutParticipantIndex];
 
-      chipsCommonHandler.addChips(payoutParticipant.chips, game.pot)
+      chipsCommonHandler.addChips(payoutParticipant.chips, game.pot);
 
       game.pot = [];
     }
   }
 
   await potRequestService.updateRequest(potRequest);
-  if (game)
+  if (game) {
     await commonHandler.updateGame(game);
+    await gameHandler.nextRound(game.id, playerId);
+  }
 }
 
-async function getOngoingPotRequest(gameId, playerId) {
+async function getOngoingPotRequest (gameId, playerId) {
   // Assert game exists
   const game = await commonHandler.getGame(gameId);
 
@@ -105,7 +100,7 @@ async function getOngoingPotRequest(gameId, playerId) {
   return ongoingPotRequest;
 }
 
-async function _getOngoingPotRequest(gameId) {
+async function _getOngoingPotRequest (gameId) {
   const requests = await potRequestService.findRequestsForGame(gameId);
   const awaitingRequests = (requests || [])
     .filter((request) => request.status === POT_REQUEST_STATUS.AWAITING);
@@ -122,5 +117,5 @@ async function _getOngoingPotRequest(gameId) {
   );
 }
 
-const potRequestHandler = { createPotRequest, getOngoingPotRequest, updatePotRequest }
+const potRequestHandler = { createPotRequest, getOngoingPotRequest, updatePotRequest };
 export default potRequestHandler;

@@ -4,7 +4,7 @@ import potRequestHandler from '../../handlers/pot-request-handler.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 
-function register(app) {
+function register (app) {
   app.post(`/${API_PREFIX}/game/:gameId/pot-requests`, jwtAuth, async (req, res) => {
     const { gameId } = req.params;
     const { playerId } = req.auth;

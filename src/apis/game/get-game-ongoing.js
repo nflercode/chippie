@@ -4,7 +4,7 @@ import gameHandler from '../../handlers/game-handler.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 
-function register(app) {
+function register (app) {
   app.get(`/${API_PREFIX}/game/ongoing`, jwtAuth, async (req, res) => {
     const { tableId, playerId } = req.auth;
 
@@ -12,7 +12,7 @@ function register(app) {
       const ongoingGame = await gameHandler.getOngoingGame(tableId, playerId);
       res.send({
         game: ongoingGame
-      })
+      });
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res

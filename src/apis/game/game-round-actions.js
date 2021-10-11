@@ -4,7 +4,7 @@ import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import actionsCommonHandler from '../../handlers/commons/actions-common-handler.js';
 
-function register(app) {
+function register (app) {
   app.get(`/${API_PREFIX}/game/:gameId/actions/:round`, jwtAuth, async (req, res) => {
     const { gameId, round } = req.params;
 

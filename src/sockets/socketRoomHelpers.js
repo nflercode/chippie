@@ -1,3 +1,3 @@
 const getRoomName = (tableId) => `table_${tableId}`;
 
-export { getRoomName }
+export { getRoomName };

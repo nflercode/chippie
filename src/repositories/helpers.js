@@ -1,4 +1,4 @@
-function handleFeed(feed, subject) {
+function handleFeed (feed, subject) {
   feed.each((err, doc) => {
     if (err) {
       subject.error(err);
@@ -15,4 +15,4 @@ function handleFeed(feed, subject) {
   });
 }
 
-export { handleFeed }
+export { handleFeed };

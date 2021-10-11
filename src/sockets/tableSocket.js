@@ -1,18 +1,17 @@
-import { Server as SocketIo } from 'socket.io'
+import { Server as SocketIo } from 'socket.io';
 import { getRoomName } from './socketRoomHelpers.js';
 import { jwtAuth } from './middlewares/jwtAuthentication.js';
 
 const _allSockets = {};
 let io;
 
-function connect(httpServer, allowedOrigins) {
-  if (io)
-    return io;
+function connect (httpServer, allowedOrigins) {
+  if (io) { return io; }
 
   io = new SocketIo(httpServer, {
     cors: {
       origin: allowedOrigins,
-      methods: ["GET"]
+      methods: ['GET']
     },
     path: '/chippie/socket'
   });
@@ -36,4 +35,4 @@ function connect(httpServer, allowedOrigins) {
   });
 }
 
-export { connect, io};
+export { connect, io };

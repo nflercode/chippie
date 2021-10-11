@@ -1,6 +1,6 @@
 import chipRepository from '../repositories/chip-repository.js';
 
-async function getAllChips() {
+async function getAllChips () {
   try {
     return await chipRepository.getAllChips();
   } catch (err) {
@@ -8,5 +8,5 @@ async function getAllChips() {
   }
 }
 
-const chipService = { getAllChips }
+const chipService = { getAllChips };
 export default chipService;

@@ -32,16 +32,16 @@ const defaultChips = [
     type: CHIP_TYPES.BLACK,
     value: 1000
   }
-]
+];
 
-async function createDefaultChips() {
+async function createDefaultChips () {
   await Chip.save(defaultChips);
   console.log('Default chip has been created!');
 }
 
-async function getAllChips() {
+async function getAllChips () {
   return Chip.run();
 }
 
-const chipRepository = { createDefaultChips, getAllChips, Chip }
+const chipRepository = { createDefaultChips, getAllChips, Chip };
 export default chipRepository;

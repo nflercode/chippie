@@ -5,10 +5,10 @@ import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.j
 import API_STATUS_CODES from '../constants/api-status-codes.js';
 import rules from './rules.js';
 
-async function doCheck(playerId, gameId) {
+async function doCheck (playerId, gameId) {
   console.log(`Performing check for player ${playerId}`);
 
-  let game = await commonHandler.getGame(gameId);
+  const game = await commonHandler.getGame(gameId);
   const participantIndex = commonHandler.getParticipantIndex(game.participants, playerId);
 
   const participant = game.participants[participantIndex];
@@ -30,15 +30,14 @@ async function doCheck(playerId, gameId) {
     actionType: PLAYER_ACTIONS.CHECK,
     gameRound: game.round,
     chips: [],
-    totalValue: 0,
-    raisedValue: 0
+    totalValue: 0
   };
 
   await commonHandler.updateGame(game);
   console.log(`Successfully updated game ${gameId}`);
 
   await actionsCommonHandler.createAction(newAction);
-  
+
   console.log(`Successfully created action, type: "${PLAYER_ACTIONS.CHECK}" for player: ${playerId}`);
 }
 

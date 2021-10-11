@@ -22,7 +22,7 @@ const PotRequest = t.createModel('PotRequest', {
   createdAt: t.type.date().default(r.now())
 });
 
-async function createPotRequest(tableId, gameId, playerId, participantAnswers) {
+async function createPotRequest (tableId, gameId, playerId, participantAnswers) {
   const newPotRequest = new PotRequest({
     tableId,
     gameId,
@@ -34,15 +34,15 @@ async function createPotRequest(tableId, gameId, playerId, participantAnswers) {
   return PotRequest.save(newPotRequest);
 }
 
-async function updatePotRequest(potRequest) {
+async function updatePotRequest (potRequest) {
   return PotRequest.get(potRequest.id).update(potRequest);
 }
 
-async function getRequest(requestId) {
+async function getRequest (requestId) {
   return PotRequest.get(requestId).run();
 }
 
-async function getByGameId(gameId) {
+async function getByGameId (gameId) {
   return PotRequest.filter({ gameId }).run();
 }
 
@@ -54,5 +54,5 @@ const potRequestRepository = {
   updatePotRequest,
   getRequest,
   subject
-}
+};
 export default potRequestRepository;

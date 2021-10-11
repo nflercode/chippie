@@ -1,6 +1,6 @@
 import gameRepository from '../repositories/game-repository.js';
 
-async function createGame(tableId, participants, createdByPlayerId) {
+async function createGame (tableId, participants, createdByPlayerId) {
   try {
     const createdGame = await gameRepository.createGame(tableId, participants, createdByPlayerId);
     return createdGame;
@@ -9,7 +9,7 @@ async function createGame(tableId, participants, createdByPlayerId) {
   }
 }
 
-async function getGame(gameId) {
+async function getGame (gameId) {
   try {
     return await gameRepository.getGame(gameId);
   } catch (err) {
@@ -17,15 +17,15 @@ async function getGame(gameId) {
   }
 }
 
-async function findGamesForTable(tableId) {
+async function findGamesForTable (tableId) {
   try {
     return await gameRepository.getByTableId(tableId);
   } catch (err) {
-    console.error('Failed to get game', gameId);
+    console.error('Failed to get game', tableId);
   }
 }
 
-async function updateGame(game) {
+async function updateGame (game) {
   try {
     return await gameRepository.updateGame(game);
   } catch (err) {
@@ -33,5 +33,5 @@ async function updateGame(game) {
   }
 }
 
-const gameService = { createGame, getGame, updateGame , findGamesForTable}
+const gameService = { createGame, getGame, updateGame, findGamesForTable };
 export default gameService;
