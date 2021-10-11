@@ -1,30 +1,31 @@
-import { PLAYER_ACTIONS } from "../constants/player-actions.js";
+import { PLAYER_ACTIONS } from '../constants/player-actions.js';
 
-function canICheck(roundActions, playerId) {
+function canICheck (roundActions, playerId) {
   // Assert that all participants has placed a bet
   if (roundActions.length < 1) {
     return false;
   }
 
-  const [previousActions, myActionIndex] = getActionsPerformedBetweenPlayerTurn(roundActions, playerId);
-  const myPreviousAction = myActionIndex > -1 ? previousActions.splice(myActionIndex, 1)[0] : null;
+  const [previousActions] = getActionsPerformedBetweenPlayerTurn(
+    roundActions,
+    playerId
+  );
 
-  const raises = previousActions.filter(action => action.actionType === PLAYER_ACTIONS.RAISE);
+  const raises = previousActions.filter(
+    action =>
+      action.actionType === PLAYER_ACTIONS.RAISE &&
+      action.playerId !== playerId
+  );
+
   if (raises.length > 0) {
     console.log('Someone has raised, must re-raise, call or fold');
-    return false;
-  }
-
-  const hasAllChecked = previousActions.every(action => action.actionType === PLAYER_ACTIONS.CHECK);
-  if (hasAllChecked && myPreviousAction?.actionType === PLAYER_ACTIONS.CHECK) {
-    console.log('Everyone and you has already checked. Available options: raise or fold');
     return false;
   }
 
   return true;
 }
 
-function canICall(roundActions, playerId, bettingValue) {
+function canICall (roundActions, playerId, bettingValue) {
   // Assert that you are not the first to bet
   if (roundActions.length === 0) {
     console.log('No actions has been performed');
@@ -46,8 +47,7 @@ function canICall(roundActions, playerId, bettingValue) {
     return false;
   }
 
-  
-  let myPreviousRaisevalue =
+  const myPreviousRaisevalue =
     myPreviousAction?.actionType === PLAYER_ACTIONS.RAISE ? myPreviousAction.totalValue : 0;
   const subTotalBettingValue = (bettingValue + (myPreviousRaisevalue)) - previousRaise.totalValue;
   if (subTotalBettingValue !== 0) {
@@ -58,7 +58,7 @@ function canICall(roundActions, playerId, bettingValue) {
   return true;
 }
 
-function canIRaise(roundActions, playerId, bettingValue) {
+function canIRaise (roundActions, playerId, bettingValue) {
   // If no round actions: it is the start of the round, it is ok to raise
   if (roundActions.length === 0) {
     return true;
@@ -80,7 +80,7 @@ function canIRaise(roundActions, playerId, bettingValue) {
     return true;
   }
 
-  let myPreviousRaisevalue =
+  const myPreviousRaisevalue =
     myPreviousAction?.actionType === PLAYER_ACTIONS.RAISE ? myPreviousAction.totalValue : 0;
   const subTotalBettingValue = (bettingValue + (myPreviousRaisevalue)) - previousRaise.totalValue;
   if (subTotalBettingValue <= 0) {
@@ -91,7 +91,7 @@ function canIRaise(roundActions, playerId, bettingValue) {
   return true;
 }
 
-function canIFold(roundActions) {
+function canIFold (roundActions) {
   if (roundActions.length === 0) {
     return false;
   }
@@ -105,7 +105,7 @@ function canIFold(roundActions) {
   return true;
 }
 
-function getActionsPerformedBetweenPlayerTurn(roundActions, playerId) {
+function getActionsPerformedBetweenPlayerTurn (roundActions, playerId) {
   // Sort the actions from newest to oldest
   roundActions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 

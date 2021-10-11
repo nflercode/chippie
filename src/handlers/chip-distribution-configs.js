@@ -1,4 +1,4 @@
-import { CHIP_TYPES } from "../constants/chip-types.js"
+import { CHIP_TYPES } from '../constants/chip-types.js';
 
 export const DEFAULT_DISTRIBUTION = {
   [CHIP_TYPES.WHITE]: {
@@ -13,4 +13,4 @@ export const DEFAULT_DISTRIBUTION = {
   [CHIP_TYPES.GREEN]: {
     amount: 2
   }
-}
+};

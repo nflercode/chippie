@@ -1,6 +1,6 @@
 import playerRepository from '../repositories/player-repository.js';
 
-async function findPlayers(tableId) {
+async function findPlayers (tableId) {
   try {
     const players = await playerRepository.findPlayers(tableId);
     return players;
@@ -9,7 +9,7 @@ async function findPlayers(tableId) {
   }
 }
 
-async function getPlayer(playerId) {
+async function getPlayer (playerId) {
   try {
     const players = await playerRepository.getPlayer(playerId);
     return players;
@@ -18,5 +18,5 @@ async function getPlayer(playerId) {
   }
 }
 
-const playerService = { findPlayers, getPlayer }
+const playerService = { findPlayers, getPlayer };
 export default playerService;

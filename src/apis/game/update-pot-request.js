@@ -5,14 +5,13 @@ import { ClientFriendlyException } from '../../exceptions/ClientFriendlyExceptio
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { POT_REQUEST_PLAYER_ANSWERS } from '../../constants/pot-request-player-answers.js';
 
-function register(app) {
+function register (app) {
   app.put(`/${API_PREFIX}/game/pot/request/:requestId`, jwtAuth, async (req, res) => {
     const { requestId } = req.params;
     const { answer } = req.body;
     const { tableId, playerId } = req.auth;
 
-    if (answer !== POT_REQUEST_PLAYER_ANSWERS.OK && answer !== POT_REQUEST_PLAYER_ANSWERS.NO)
-      return res.status(400).send(createErrorPayload('Must be OK on NO'));
+    if (answer !== POT_REQUEST_PLAYER_ANSWERS.OK && answer !== POT_REQUEST_PLAYER_ANSWERS.NO) { return res.status(400).send(createErrorPayload('Must be OK on NO')); }
 
     try {
       await potRequestHandler.updatePotRequest(requestId, tableId, playerId, answer);

@@ -34,20 +34,16 @@ if (isPrEnvironment()) {
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: function(origin, callback) {
-    if (allowedOrigins.find((o) => o.test(origin)))
-      return callback(null, true);
+  origin: function (origin, callback) {
+    if (allowedOrigins.find((o) => o.test(origin))) { return callback(null, true); }
 
     callback();
   }
 }));
 
-async function createDefaultChips() {
+async function createDefaultChips () {
   const chips = await chipRepository.getAllChips();
-  if (!chips || chips.length === 0)
-    chipRepository.createDefaultChips();
-  else
-    console.log('Chips already exist');
+  if (!chips || chips.length === 0) { chipRepository.createDefaultChips(); } else { console.log('Chips already exist'); }
 }
 
 const httpServer = http.createServer(app);

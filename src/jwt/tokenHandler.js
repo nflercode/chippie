@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-function verifyAuthToken(token) {
+function verifyAuthToken (token) {
   try {
     return jwt.verify(token, process.env.JWT_AUTH_SECRET);
   } catch (err) {
@@ -8,7 +8,7 @@ function verifyAuthToken(token) {
   }
 }
 
-function verifyRefreshToken(token) {
+function verifyRefreshToken (token) {
   try {
     return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
   } catch (err) {
@@ -19,4 +19,4 @@ function verifyRefreshToken(token) {
 export {
   verifyAuthToken,
   verifyRefreshToken
-}
+};

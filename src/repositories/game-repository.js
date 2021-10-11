@@ -3,6 +3,7 @@ import dbConfig from './rdbConfig.js';
 import { Subject } from 'rxjs';
 import { handleFeed } from './helpers.js';
 import { GAME_STATUSES } from '../constants/game-statuses.js';
+import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
 
 const subject = new Subject();
 const t = thinky(dbConfig);
@@ -19,7 +20,8 @@ const Game = t.createModel('Game', {
     playerId: t.type.string(),
     turnOrder: t.type.number(),
     isCurrentTurn: t.type.boolean(),
-    isParticipating: t.type.boolean(),
+    participationStatus: t.type.string().enum(Object.values(PARTICIPATION_STATUSES)).default(PARTICIPATION_STATUSES.UNDEFINED),
+    placing: t.type.number(),
     chips: t.type.array().schema(t.type.object().schema({
       chipId: t.type.string(),
       amount: t.type.number()
@@ -33,7 +35,7 @@ const Game = t.createModel('Game', {
   updatedAt: t.type.date()
 });
 
-async function createGame(tableId, participants, createdByPlayerId) {
+async function createGame (tableId, participants, createdByPlayerId) {
   const newGame = new Game({
     tableId,
     round: 1,
@@ -47,20 +49,20 @@ async function createGame(tableId, participants, createdByPlayerId) {
   return Game.save(newGame);
 }
 
-async function getGame(gameId) {
+async function getGame (gameId) {
   return Game.get(gameId).run();
 }
 
-async function getByTableId(tableId) {
+async function getByTableId (tableId) {
   return Game.filter({ tableId }).run();
 }
 
-async function updateGame(game) {
+async function updateGame (game) {
   game.updatedAt = r.now();
   return Game.get(game.id).update(game);
 }
 
 Game.changes().then(feed => handleFeed(feed, subject));
 
-const gameRepository = { createGame, getGame, updateGame, getByTableId, GAME_STATUSES, subject }
+const gameRepository = { createGame, getGame, updateGame, getByTableId, GAME_STATUSES, subject };
 export default gameRepository;

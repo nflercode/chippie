@@ -1,6 +1,6 @@
 import { verifyAuthToken } from '../../jwt/tokenHandler.js';
 
-function jwtAuth(socket, next) {
+function jwtAuth (socket, next) {
   const authToken = socket.handshake.auth.token;
   if (!authToken) {
     console.log('missing auth header, closing connection');
@@ -16,4 +16,4 @@ function jwtAuth(socket, next) {
   next();
 }
 
-export { jwtAuth }
+export { jwtAuth };

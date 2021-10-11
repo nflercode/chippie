@@ -1,17 +1,17 @@
-import actionRepository from "../repositories/action-repository.js";
+import actionRepository from '../repositories/action-repository.js';
 
-async function createAction(newAction) {
+async function createAction (newAction) {
   try {
     return await actionRepository.createAction(newAction);
-  } catch(err) {
+  } catch (err) {
     console.error('Failed to create action', err);
   }
 }
 
-async function findActionsForGame(gameId, gameRound) {
+async function findActionsForGame (gameId, gameRound) {
   try {
     return await actionRepository.findActionsForGame(gameId, gameRound);
-  } catch(err) {
+  } catch (err) {
     console.error('Failed to find actions', err);
   }
 }

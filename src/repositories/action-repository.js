@@ -21,16 +21,16 @@ const Action = t.createModel('Action', {
   createdAt: t.type.date().default(Date.now)
 });
 
-async function createAction(action) {
+async function createAction (action) {
   const newAction = new Action(action);
   return Action.save(newAction);
 }
 
-async function findActionsForGame(gameId, gameRound) {
+async function findActionsForGame (gameId, gameRound) {
   return Action.filter({ gameId, gameRound }).run();
 }
 
 Action.changes().then(feed => handleFeed(feed, subject));
 
-const actionRepository = { createAction, findActionsForGame, subject }
+const actionRepository = { createAction, findActionsForGame, subject };
 export default actionRepository;

@@ -1,24 +1,25 @@
-import API_STATUS_CODES from "../constants/api-status-codes.js";
-import { PLAYER_ACTIONS } from "../constants/player-actions.js";
-import { ClientFriendlyException } from "../exceptions/ClientFriendlyException.js";
-import chipService from "../services/chip-service.js";
-import actionsCommonHandler from "./commons/actions-common-handler.js";
-import commonHandler from "./commons/common-handler.js";
-import chipsCommonHandler from "./commons/chips-common-handler.js";
-import rules from "./rules.js";
-import actionService from "../services/action-service.js";
+import API_STATUS_CODES from '../constants/api-status-codes.js';
+import { PLAYER_ACTIONS } from '../constants/player-actions.js';
+import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
+import chipService from '../services/chip-service.js';
+import actionsCommonHandler from './commons/actions-common-handler.js';
+import commonHandler from './commons/common-handler.js';
+import chipsCommonHandler from './commons/chips-common-handler.js';
+import rules from './rules.js';
+import actionService from '../services/action-service.js';
+import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
 
-async function doCall(gameId, playerId, bettingChips) {
-  let game = await commonHandler.getGame(gameId);
+async function doCall (gameId, playerId, bettingChips) {
+  const game = await commonHandler.getGame(gameId);
 
   const participantIndex = commonHandler.getParticipantIndex(game.participants, playerId);
-  let participant = game.participants[participantIndex];
+  const participant = game.participants[participantIndex];
   commonHandler.assertIsCurrentTurn(participant);
 
   const actualChips = await chipService.getAllChips();
   const gameActions = await actionService.findActionsForGame(gameId, game.round);
 
-  const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(bettingChips, actualChips)
+  const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(bettingChips, actualChips);
   const totalBettingAmount = chipsCommonHandler.getTotalValueFromChips(bettingChipsWithValue);
 
   const canICall = rules.canICall(gameActions, playerId, totalBettingAmount);
@@ -32,6 +33,10 @@ async function doCall(gameId, playerId, bettingChips) {
   chipsCommonHandler.subtractChips(participant.chips, bettingChips);
   chipsCommonHandler.addChips(game.pot, bettingChips);
 
+  if (participant.chips.every(chip => chip.amount === 0)) {
+    participant.participationStatus = PARTICIPATION_STATUSES.NO_CHIPS;
+  }
+
   commonHandler.switchParticipantTurn(game.participants, participantIndex);
 
   const newAction = {
@@ -40,9 +45,9 @@ async function doCall(gameId, playerId, bettingChips) {
     actionType: PLAYER_ACTIONS.CALL,
     gameRound: game.round,
     chips: bettingChips,
-    totalValue: totalBettingAmount,
-    raisedValue: 0
-  }
+    totalValue: totalBettingAmount
+  };
+
   await commonHandler.updateGame(game);
   await actionsCommonHandler.createAction(newAction);
 }

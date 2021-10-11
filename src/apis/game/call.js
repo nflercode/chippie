@@ -4,7 +4,7 @@ import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import callHandler from '../../handlers/call-handler.js';
 
-function register(app) {
+function register (app) {
   app.post(`/${API_PREFIX}/game/:gameId/call`, jwtAuth, async (req, res) => {
     const { gameId } = req.params;
     const { playerId } = req.auth;

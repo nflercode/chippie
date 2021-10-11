@@ -4,4 +4,4 @@ const createErrorPayload = (msg) => ({
 
 const API_PREFIX = 'chippie';
 
-export { createErrorPayload, API_PREFIX }
+export { createErrorPayload, API_PREFIX };

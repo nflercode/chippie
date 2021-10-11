@@ -2,44 +2,44 @@ import potRequestRepository from '../repositories/pot-request-repository.js';
 import { getRoomName } from '../sockets/socketRoomHelpers.js';
 import { io } from '../sockets/tableSocket.js';
 
-function start() {
+function start () {
   potRequestRepository
-  .subject
+    .subject
     .subscribe({
       next: (event) => {
-        switch(event.type) {
-          case "UPDATED":
+        switch (event.type) {
+          case 'UPDATED':
             handleUpdate(event);
             break;
-          case "CREATED":
+          case 'CREATED':
             handleCreate(event);
             break;
-          case "DELETED":
+          case 'DELETED':
             handleDelete(event);
             break;
         }
       },
       error: (err) => {
         console.error(err);
-    }
-  });
+      }
+    });
 }
 
-function handleDelete(event) {
+function handleDelete (event) {
 
 }
 
-async function handleCreate(event) {
+async function handleCreate (event) {
   const { tableId } = event.doc;
   const room = getRoomName(tableId);
   io.to(room).emit('pot-request-created', event.doc);
 }
 
-function handleUpdate(event) {
+function handleUpdate (event) {
   const { tableId } = event.newValue;
   const room = getRoomName(tableId);
   io.to(room).emit('pot-request-updated', event.newValue);
 }
 
-const dbEventHandlerPotRequest = { start }
+const dbEventHandlerPotRequest = { start };
 export default dbEventHandlerPotRequest;
