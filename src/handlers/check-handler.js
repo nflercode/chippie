@@ -15,7 +15,8 @@ async function doCheck (playerId, gameId) {
   commonHandler.assertIsCurrentTurn(participant);
 
   const roundActions = await actionsCommonHandler.findGameActionsForRound(gameId, game.round);
-  if (!rules.canICheck(roundActions, playerId)) {
+  const [canICheck, totalBettedValue] = rules.canICheck(roundActions, playerId);
+  if (!canICheck) {
     throw new ClientFriendlyException(
       'You can not check',
       API_STATUS_CODES.BAD_REQUEST
@@ -23,6 +24,7 @@ async function doCheck (playerId, gameId) {
   }
 
   commonHandler.switchParticipantTurn(game.participants, participantIndex);
+  console.log(totalBettedValue);
 
   const newAction = {
     gameId,
@@ -30,7 +32,8 @@ async function doCheck (playerId, gameId) {
     actionType: PLAYER_ACTIONS.CHECK,
     gameRound: game.round,
     chips: [],
-    totalValue: 0
+    bettedValue: 0,
+    totalBettedValue
   };
 
   await commonHandler.updateGame(game);

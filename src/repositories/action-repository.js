@@ -17,7 +17,8 @@ const Action = t.createModel('Action', {
     chipId: t.type.string(),
     amount: t.type.number()
   })),
-  totalValue: t.type.number(),
+  bettedValue: t.type.number(),
+  totalBettedValue: t.type.number(),
   createdAt: t.type.date().default(Date.now)
 });
 

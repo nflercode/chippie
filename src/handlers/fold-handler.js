@@ -18,7 +18,8 @@ async function doFold (playerId, gameId) {
   commonHandler.assertIsCurrentTurn(participant);
 
   const gameActions = await actionsCommonHandler.findGameActionsForRound(gameId, game.round);
-  if (!rules.canIFold(gameActions)) {
+  const [canIFold, totalBettedValue] = rules.canIFold(gameActions, playerId);
+  if (!canIFold) {
     throw new ClientFriendlyException(
       'You can not fold',
       API_STATUS_CODES.BAD_REQUEST
@@ -34,7 +35,8 @@ async function doFold (playerId, gameId) {
     actionType: PLAYER_ACTIONS.FOLD,
     gameRound: game.round,
     chips: [],
-    totalValue: 0
+    bettedValue: 0,
+    totalBettedValue
   };
 
   await commonHandler.updateGame(game);
