@@ -24,7 +24,6 @@ async function doCheck (playerId, gameId) {
   }
 
   commonHandler.switchParticipantTurn(game.participants, participantIndex);
-  console.log(totalBettedValue);
 
   const newAction = {
     gameId,
