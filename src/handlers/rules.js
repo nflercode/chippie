@@ -1,125 +1,117 @@
 import { PLAYER_ACTIONS } from '../constants/player-actions.js';
 
 function canICheck (roundActions, playerId) {
-  // Assert that all participants has placed a bet
   if (roundActions.length < 1) {
-    return false;
+    return [false, undefined];
   }
 
-  const [previousActions] = getActionsPerformedBetweenPlayerTurn(
+  const [myLastAction, previousBettorAction] = getMyLastActionAndPreviousBettorAction(
     roundActions,
     playerId
   );
 
-  const raises = previousActions.filter(
-    action =>
-      action.actionType === PLAYER_ACTIONS.RAISE &&
-      action.playerId !== playerId
-  );
-
-  if (raises.length > 0) {
-    console.log('Someone has raised, must re-raise, call or fold');
-    return false;
+  if (!previousBettorAction) {
+    console.log('Previous bettor is undefined. All participants might have folded. Can\'t check.');
+    return [false, undefined];
   }
 
-  return true;
+  if ((myLastAction?.totalBettedValue || 0) === previousBettorAction.totalBettedValue) {
+    return [true, (myLastAction?.totalBettedValue || 0)];
+  }
+
+  return [false, undefined];
 }
 
 function canICall (roundActions, playerId, bettingValue) {
   // Assert that you are not the first to bet
   if (roundActions.length === 0) {
     console.log('No actions has been performed');
+    return [false, undefined];
+  }
+
+  const [myLastAction, previousBettorAction] = getMyLastActionAndPreviousBettorAction(
+    roundActions,
+    playerId
+  );
+
+  if (!previousBettorAction) {
+    console.log('Previous bettor is undefined. All participants might have folded. Can\'t call.');
     return false;
   }
 
-  const [previousActions, myActionIndex] = getActionsPerformedBetweenPlayerTurn(roundActions, playerId);
-  const myPreviousAction = myActionIndex > -1 ? previousActions.splice(myActionIndex, 1)[0] : null;
-
-  const hasAllCalled = previousActions.every(action => action.actionType === PLAYER_ACTIONS.CALL);
-  if (hasAllCalled) {
-    console.log('All participants has called, can not call one more time.');
-    return false;
+  const subTotalBettingValue = (myLastAction?.totalBettedValue || 0) + bettingValue;
+  if (subTotalBettingValue === previousBettorAction.totalBettedValue) {
+    return [true, subTotalBettingValue];
   }
 
-  const previousRaise = previousActions.find((roundAction) => roundAction.actionType === PLAYER_ACTIONS.RAISE);
-  if (!previousRaise) {
-    console.log('No raise to call on was found');
-    return false;
-  }
+  console.log(`betted amount '${bettingValue}', total '${subTotalBettingValue}'
+    is not equal to ${previousBettorAction.totalBettedValue}`);
 
-  const myPreviousRaisevalue =
-    myPreviousAction?.actionType === PLAYER_ACTIONS.RAISE ? myPreviousAction.totalValue : 0;
-  const subTotalBettingValue = (bettingValue + (myPreviousRaisevalue)) - previousRaise.totalValue;
-  if (subTotalBettingValue !== 0) {
-    console.log('Betted wrong amount');
-    return false;
-  }
-
-  return true;
+  return [false, undefined];
 }
 
 function canIRaise (roundActions, playerId, bettingValue) {
-  // If no round actions: it is the start of the round, it is ok to raise
   if (roundActions.length === 0) {
-    return true;
+    return [true, bettingValue];
   }
 
-  const [previousActions, myActionIndex] = getActionsPerformedBetweenPlayerTurn(roundActions, playerId);
-  const myPreviousAction = myActionIndex > -1 ? previousActions.splice(myActionIndex, 1)[0] : null;
+  const [myLastAction, previousBettorAction] = getMyLastActionAndPreviousBettorAction(
+    roundActions,
+    playerId
+  );
 
-  const hasAllFolded = previousActions.every(action => action.actionType === PLAYER_ACTIONS.FOLD);
-  if (hasAllFolded) {
-    console.log('Cant raise if all has folded');
-    return false;
+  if (!previousBettorAction) {
+    console.log('Previous bettor is undefined. All participants might have folded. Can\'t raise.');
+    return [false, undefined];
   }
 
-  const previousRaise = previousActions.find((roundAction) => roundAction.actionType === PLAYER_ACTIONS.RAISE);
-  const hasAllChecked = previousActions.every(action => action.actionType === PLAYER_ACTIONS.CHECK);
-  if (hasAllChecked || !previousRaise) {
-    console.log('All has checked or you did the last raise, free to raise any amount');
-    return true;
+  const subTotalBettingValue = (myLastAction?.totalBettedValue || 0) + bettingValue;
+  if (subTotalBettingValue > previousBettorAction.totalBettedValue) {
+    return [true, subTotalBettingValue];
   }
 
-  const myPreviousRaisevalue =
-    myPreviousAction?.actionType === PLAYER_ACTIONS.RAISE ? myPreviousAction.totalValue : 0;
-  const subTotalBettingValue = (bettingValue + (myPreviousRaisevalue)) - previousRaise.totalValue;
-  if (subTotalBettingValue <= 0) {
-    console.log('Did not bet correct amount');
-    return false;
-  }
+  console.log(`betted amount '${bettingValue}', total '${subTotalBettingValue}'
+  is not larger than ${previousBettorAction.totalBettedValue}`);
 
-  return true;
+  return [false, undefined];
 }
 
-function canIFold (roundActions) {
+function canIFold (roundActions, playerId) {
   if (roundActions.length === 0) {
-    return false;
+    return [false, undefined];
   }
 
-  const hasAllFolded = roundActions.every(action => action.actionType === PLAYER_ACTIONS.FOLD);
-  if (hasAllFolded) {
-    console.log('Everyone can not fold');
-    return false;
+  const [myLastAction, previousBettorAction] = getMyLastActionAndPreviousBettorAction(
+    roundActions,
+    playerId
+  );
+
+  if (!previousBettorAction) {
+    console.log(`Previous bettor action is undefined.
+      All participants might have folded. Can't fold.`);
+    return [false, undefined];
   }
 
-  return true;
+  return [true, (myLastAction?.totalBettedValue || 0)];
 }
 
-function getActionsPerformedBetweenPlayerTurn (roundActions, playerId) {
-  // Sort the actions from newest to oldest
+function getMyLastActionAndPreviousBettorAction (roundActions, playerId) {
   roundActions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const playerIndex = roundActions.findIndex(action => action.playerId === playerId);
   let endIndex = playerIndex;
   if (endIndex === -1) {
     endIndex = roundActions.length;
-  } else {
-    endIndex++;
   }
 
+  const validRoundActionsFromPlayerLastTurn =
+    roundActions
+      .slice(0, endIndex)
+      .filter(x => x.actionType !== PLAYER_ACTIONS.FOLD);
+
   return [
-    roundActions.slice(0, endIndex),
-    playerIndex
+    roundActions[playerIndex],
+    validRoundActionsFromPlayerLastTurn[validRoundActionsFromPlayerLastTurn.length - 1]
   ];
 }
 

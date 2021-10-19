@@ -20,9 +20,9 @@ async function doCall (gameId, playerId, bettingChips) {
   const gameActions = await actionService.findActionsForGame(gameId, game.round);
 
   const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(bettingChips, actualChips);
-  const totalBettingAmount = chipsCommonHandler.getTotalValueFromChips(bettingChipsWithValue);
+  const bettedValue = chipsCommonHandler.getBettedValueFromChips(bettingChipsWithValue);
 
-  const canICall = rules.canICall(gameActions, playerId, totalBettingAmount);
+  const [canICall, newTotalBettedValue] = rules.canICall(gameActions, playerId, bettedValue);
   if (!canICall) {
     throw new ClientFriendlyException(
       'You can not call',
@@ -45,7 +45,8 @@ async function doCall (gameId, playerId, bettingChips) {
     actionType: PLAYER_ACTIONS.CALL,
     gameRound: game.round,
     chips: bettingChips,
-    totalValue: totalBettingAmount
+    bettedValue,
+    totalBettedValue: newTotalBettedValue
   };
 
   await commonHandler.updateGame(game);

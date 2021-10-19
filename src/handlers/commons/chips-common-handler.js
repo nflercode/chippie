@@ -65,7 +65,7 @@ function mapBettingChipWithValue (bettingChips, actualChips) {
   });
 }
 
-function getTotalValueFromChips (chips = []) {
+function getBettedValueFromChips (chips = []) {
   return chips.reduce((acc, curr) => acc + (curr.value * curr.amount), 0);
 }
 
@@ -73,6 +73,6 @@ const chipsCommonHandler = {
   subtractChips,
   addChips,
   mapBettingChipWithValue,
-  getTotalValueFromChips
+  getBettedValueFromChips
 };
 export default chipsCommonHandler;

@@ -103,25 +103,17 @@ async function nextRound (gameId, playerId) {
     activeParticipants[0].placing = 1;
     game.status = GAME_STATUSES.ENDED;
   } else {
-    const availableTurnOrders = activeParticipants.map(p => p.turnOrder);
-    const maxTurnOrder = Math.max(...availableTurnOrders);
-    const minTurnOrder = Math.min(...availableTurnOrders);
+    const maxTurnOrder = activeParticipants.length;
+    const minTurnOrder = 1;
 
-    activeParticipants.map((p, i) => {
-      let nextTurnOrder = ++p.turnOrder;
+    activeParticipants.forEach(p => {
+      let nextTurnOrder = p.turnOrder + 1;
       if (nextTurnOrder > maxTurnOrder) {
         nextTurnOrder = minTurnOrder;
       }
 
-      if (i > 0 && activeParticipants[(i - 1)].turnOrder === nextTurnOrder) {
-        nextTurnOrder++;
-      }
-
-      return {
-        ...p,
-        turnOrder: nextTurnOrder,
-        isCurrentTurn: nextTurnOrder === minTurnOrder
-      };
+      p.turnOrder = nextTurnOrder;
+      p.isCurrentTurn = nextTurnOrder === minTurnOrder;
     });
   }
 

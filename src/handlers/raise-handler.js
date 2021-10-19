@@ -21,9 +21,9 @@ async function doRaise (gameId, playerId, bettingChips) {
   const gameActions = await actionsCommonHandler.findGameActionsForRound(gameId, game.round);
 
   const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(bettingChips, actualChips);
-  const totalBettingAmount = chipsCommonHandler.getTotalValueFromChips(bettingChipsWithValue);
+  const bettedValue = chipsCommonHandler.getBettedValueFromChips(bettingChipsWithValue);
 
-  const canIRaise = rules.canIRaise(gameActions, playerId, totalBettingAmount);
+  const [canIRaise, newTotalBettedValue] = rules.canIRaise(gameActions, playerId, bettedValue);
   if (!canIRaise) {
     throw new ClientFriendlyException(
       'You can not raise',
@@ -46,7 +46,8 @@ async function doRaise (gameId, playerId, bettingChips) {
     actionType: PLAYER_ACTIONS.RAISE,
     gameRound: game.round,
     chips: bettingChips,
-    totalValue: totalBettingAmount
+    bettedValue,
+    totalBettedValue: newTotalBettedValue
   };
 
   await commonHandler.updateGame(game);

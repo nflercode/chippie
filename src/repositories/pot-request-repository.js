@@ -7,7 +7,6 @@ import { POT_REQUEST_PLAYER_ANSWERS } from '../constants/pot-request-player-answ
 
 const subject = new Subject();
 const t = thinky(dbConfig);
-const r = t.r;
 
 const PotRequest = t.createModel('PotRequest', {
   id: t.type.string(),
@@ -19,7 +18,7 @@ const PotRequest = t.createModel('PotRequest', {
     playerId: t.type.string(),
     answer: t.type.string().enum(Object.values(POT_REQUEST_PLAYER_ANSWERS)).default(POT_REQUEST_PLAYER_ANSWERS.UNDEFINED)
   })),
-  createdAt: t.type.date().default(r.now())
+  createdAt: t.type.date().default(Date.now)
 });
 
 async function createPotRequest (tableId, gameId, playerId, participantAnswers) {
