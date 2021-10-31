@@ -11,6 +11,7 @@ import closeGameApi from './game/close-game.js';
 import gameNextRoundApi from './game/game-next-round.js';
 import callApi from './game/call.js';
 import gameRoundActionsApi from './game/game-round-actions.js';
+import exchangeChipsApi from './chips/exchange-chips.js';
 
 function loadApis (app) {
   getChips.register(app);
@@ -26,6 +27,7 @@ function loadApis (app) {
   gameNextRoundApi.register(app);
   callApi.register(app);
   gameRoundActionsApi.register(app);
+  exchangeChipsApi.register(app);
 }
 
 const apiLoader = { loadApis };

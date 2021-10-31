@@ -8,7 +8,7 @@ function subtractChips (chips, chipsToSubtract) {
     const chipIndex = chipsSubtracted.findIndex(c => c.chipId === chipToSubtract.chipId);
     if (chipIndex === -1) {
       throw new ClientFriendlyException(
-        'Participant tried to bet chip that whom does not have',
+        'Participant tried to subtract chip that doesn\'t exist.',
         API_STATUS_CODES.BAD_REQUEST
       );
     }
@@ -18,7 +18,7 @@ function subtractChips (chips, chipsToSubtract) {
 
     if (newAmount < 0) {
       throw new ClientFriendlyException(
-        'Participant tried to bet too many chips',
+        'Participant tried to subtract too many chips',
         API_STATUS_CODES.BAD_REQUEST
       );
     }
