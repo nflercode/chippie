@@ -103,17 +103,18 @@ async function nextRound (gameId, playerId) {
     activeParticipants[0].placing = 1;
     game.status = GAME_STATUSES.ENDED;
   } else {
-    const maxTurnOrder = activeParticipants.length;
     const minTurnOrder = 1;
+    let turnOrder = minTurnOrder;
+
+    activeParticipants
+      .sort((a, b) => a.turnOrder - b.turnOrder)
+      .unshift(activeParticipants.pop());
 
     activeParticipants.forEach(p => {
-      let nextTurnOrder = p.turnOrder + 1;
-      if (nextTurnOrder > maxTurnOrder) {
-        nextTurnOrder = minTurnOrder;
-      }
+      p.turnOrder = turnOrder;
+      p.isCurrentTurn = turnOrder === minTurnOrder;
 
-      p.turnOrder = nextTurnOrder;
-      p.isCurrentTurn = nextTurnOrder === minTurnOrder;
+      turnOrder++;
     });
   }
 
