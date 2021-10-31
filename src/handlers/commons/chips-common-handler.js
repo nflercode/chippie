@@ -8,7 +8,7 @@ function subtractChips (chips, chipsToSubtract) {
     const chipIndex = chipsSubtracted.findIndex(c => c.chipId === chipToSubtract.chipId);
     if (chipIndex === -1) {
       throw new ClientFriendlyException(
-        'Participant tried to subtract chip that whom does not have',
+        'Participant tried to subtract chip that doesn\'t exist.',
         API_STATUS_CODES.BAD_REQUEST
       );
     }
