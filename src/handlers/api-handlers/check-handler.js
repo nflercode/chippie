@@ -1,9 +1,9 @@
-import { PLAYER_ACTIONS } from '../constants/player-actions.js';
-import commonHandler from './commons/common-handler.js';
-import actionsCommonHandler from './commons/actions-common-handler.js';
-import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
-import API_STATUS_CODES from '../constants/api-status-codes.js';
-import rules from './rules.js';
+import { PLAYER_ACTIONS } from '../../constants/player-actions.js';
+import commonHandler from '../commons/common-handler.js';
+import actionsCommonHandler from '../commons/actions-common-handler.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import rules from '../rules.js';
 
 async function doCheck (playerId, gameId) {
   console.log(`Performing check for player ${playerId}`);

@@ -4,5 +4,6 @@ export const PLAYER_ACTIONS = {
   CHECK: 'CHECK',
   CALL: 'CALL',
   RAISE: 'RAISE',
-  RERAISE: 'RERAISE'
+  RERAISE: 'RERAISE',
+  BUY_IN: 'BUY_IN'
 };

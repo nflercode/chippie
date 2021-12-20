@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { handleFeed } from './helpers.js';
 import { GAME_STATUSES } from '../constants/game-statuses.js';
 import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
+import { PARTICIPANT_SEATS } from '../constants/participant-seats.js';
 
 const subject = new Subject();
 const t = thinky(dbConfig);
@@ -16,22 +17,26 @@ const Game = t.createModel('Game', {
   status: t.type.string().enum(Object.values(GAME_STATUSES)).default(GAME_STATUSES.UNDEFINED),
   createdBy: t.type.string(),
   closedBy: t.type.string(),
+  bigBuyIn: t.type.number(),
+  smallBuyIn: t.type.number(),
   participants: t.type.array().schema(t.type.object().schema({
     playerId: t.type.string(),
     turnOrder: t.type.number(),
+    seat: t.type.string().enum(Object.values(PARTICIPANT_SEATS)).default(PARTICIPANT_SEATS.UNDEFINED),
     isCurrentTurn: t.type.boolean(),
-    participationStatus: t.type.string().enum(Object.values(PARTICIPATION_STATUSES)).default(PARTICIPATION_STATUSES.UNDEFINED),
+    participationStatus: t.type.string().enum(Object.values(PARTICIPATION_STATUSES))
+      .default(PARTICIPATION_STATUSES.UNDEFINED),
     placing: t.type.number(),
     chips: t.type.array().schema(t.type.object().schema({
       chipId: t.type.string(),
       amount: t.type.number()
     }))
-  })),
+  }).options({ enforce_extra: 'remove' })),
   pot: t.type.array().schema(t.type.object().schema({
     chipId: t.type.string(),
     amount: t.type.number()
   })),
-  createdAt: t.type.date().default(r.now()),
+  createdAt: t.type.date().default(Date.now),
   updatedAt: t.type.date()
 });
 
@@ -39,6 +44,8 @@ async function createGame (tableId, participants, createdByPlayerId) {
   const newGame = new Game({
     tableId,
     round: 1,
+    bigBuyIn: 20,
+    smallBuyIn: 10,
     createdBy: createdByPlayerId,
     status: GAME_STATUSES.ONGOING,
     participants,

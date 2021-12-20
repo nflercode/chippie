@@ -1,11 +1,11 @@
-import API_STATUS_CODES from '../constants/api-status-codes.js';
-import { POT_REQUEST_PLAYER_ANSWERS } from '../constants/pot-request-player-answers.js';
-import { POT_REQUEST_STATUS } from '../constants/pot-request-status.js';
-import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
-import potRequestService from '../services/pot-request-service.js';
-import chipsCommonHandler from './commons/chips-common-handler.js';
-import commonHandler from './commons/common-handler.js';
-import gameHandler from './game-handler.js';
+import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { POT_REQUEST_PLAYER_ANSWERS } from '../../constants/pot-request-player-answers.js';
+import { POT_REQUEST_STATUS } from '../../constants/pot-request-status.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import potRequestService from '../../services/pot-request-service.js';
+import chipsCommonHandler from '../commons/chips-common-handler.js';
+import commonHandler from '../commons/common-handler.js';
+import gameHandler from '../game-handler.js';
 
 async function createPotRequest (gameId, playerId) {
   const ongoingPotRequest = await _getOngoingPotRequest(gameId);

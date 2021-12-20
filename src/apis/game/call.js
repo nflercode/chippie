@@ -2,7 +2,7 @@ import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
-import callHandler from '../../handlers/call-handler.js';
+import callHandler from '../../handlers/api-handlers/call-handler.js';
 
 function register (app) {
   app.post(`/${API_PREFIX}/game/:gameId/call`, jwtAuth, async (req, res) => {

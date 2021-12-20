@@ -1,8 +1,8 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import gameHandler from '../../handlers/game-handler.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import closeGameHandler from '../../handlers/api-handlers/close-game-handler.js';
 
 function register (app) {
   app.post(`/${API_PREFIX}/game/:gameId/close`, jwtAuth, async (req, res) => {
@@ -10,7 +10,7 @@ function register (app) {
     const { playerId } = req.auth;
 
     try {
-      await gameHandler.closeGame(gameId, playerId);
+      await closeGameHandler.doCloseGame(gameId, playerId);
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res

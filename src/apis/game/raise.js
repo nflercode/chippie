@@ -1,6 +1,6 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import raiseHandler from '../../handlers/raise-handler.js';
+import raiseHandler from '../../handlers/api-handlers/raise-handler.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 
