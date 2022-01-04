@@ -24,16 +24,17 @@ async function doBuyIn (tableId, playerId, bettingChips) {
 
   const gameActions = await actionService.findActionsForGame(game.id, game.round);
 
+  const notEnoughToBuyInText = 'Participant did not bet enough to buy in';
   if (gameActions.length === 0 && participant.seat === PARTICIPANT_SEATS.SMALL_BLIND) {
     if (bettingValue !== game.smallBuyIn) {
       throw new ClientFriendlyException(
-        'Participant did not bet enough to buy in',
+        notEnoughToBuyInText,
         API_STATUS_CODES.BAD_REQUEST);
     }
   } else if (gameActions.length === 1 && participant.seat === PARTICIPANT_SEATS.BIG_BLIND) {
     if (bettingValue !== game.bigBuyIn) {
       throw new ClientFriendlyException(
-        'Participant did not bet enough to buy in',
+        notEnoughToBuyInText,
         API_STATUS_CODES.BAD_REQUEST);
     }
   } else {

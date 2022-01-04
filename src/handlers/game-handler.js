@@ -7,6 +7,7 @@ import commonHandler from './commons/common-handler.js';
 import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
 import { PARTICIPANT_SEATS } from '../constants/participant-seats.js';
 import chipsCommonHandler from './commons/chips-common-handler.js';
+import { BUY_IN_PRICES } from '../constants/buy-in-prices.js';
 
 async function nextRound (gameId, playerId) {
   console.log('Going to next round for game', gameId);
@@ -55,13 +56,13 @@ async function nextRound (gameId, playerId) {
   if (lowestTotalChipValue < game.bigBuyIn) {
     game.bigBuyIn = lowestTotalChipValue;
   } else {
-    game.bigBuyIn = 20;
+    game.bigBuyIn = BUY_IN_PRICES.BIG_BUY_IN;
   }
 
   if (smallBuyInParticipant?.totalChipValue < game.smallBuyIn) {
     game.smallBuyIn = smallBuyInParticipant.totalChipValue;
   } else {
-    game.smallBuyIn = 10;
+    game.smallBuyIn = BUY_IN_PRICES.SMALL_BUY_IN;
   }
 
   await commonHandler.updateGame(game);

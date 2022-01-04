@@ -5,6 +5,7 @@ import { handleFeed } from './helpers.js';
 import { GAME_STATUSES } from '../constants/game-statuses.js';
 import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
 import { PARTICIPANT_SEATS } from '../constants/participant-seats.js';
+import { BUY_IN_PRICES } from '../constants/buy-in-prices.js';
 
 const subject = new Subject();
 const t = thinky(dbConfig);
@@ -44,8 +45,8 @@ async function createGame (tableId, participants, createdByPlayerId) {
   const newGame = new Game({
     tableId,
     round: 1,
-    bigBuyIn: 20,
-    smallBuyIn: 10,
+    bigBuyIn: BUY_IN_PRICES.BIG_BUY_IN,
+    smallBuyIn: BUY_IN_PRICES.SMALL_BUY_IN,
     createdBy: createdByPlayerId,
     status: GAME_STATUSES.ONGOING,
     participants,
