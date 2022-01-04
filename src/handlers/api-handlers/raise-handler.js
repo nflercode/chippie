@@ -1,12 +1,12 @@
-import API_STATUS_CODES from '../constants/api-status-codes.js';
-import { PLAYER_ACTIONS } from '../constants/player-actions.js';
-import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
-import chipService from '../services/chip-service.js';
-import actionsCommonHandler from './commons/actions-common-handler.js';
-import commonHandler from './commons/common-handler.js';
-import chipsCommonHandler from './commons/chips-common-handler.js';
-import rules from './rules.js';
-import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
+import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { PLAYER_ACTIONS } from '../../constants/player-actions.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import chipService from '../../services/chip-service.js';
+import actionsCommonHandler from '../commons/actions-common-handler.js';
+import commonHandler from '../commons/common-handler.js';
+import chipsCommonHandler from '../commons/chips-common-handler.js';
+import rules from '../rules.js';
+import { PARTICIPATION_STATUSES } from '../../constants/participation-statuses.js';
 
 async function doRaise (gameId, playerId, bettingChips) {
   const game = await commonHandler.getGame(gameId);

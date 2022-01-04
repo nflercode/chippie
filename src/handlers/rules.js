@@ -1,7 +1,9 @@
 import { PLAYER_ACTIONS } from '../constants/player-actions.js';
 
+const NUM_BUY_IN_ROUNDS = 2;
+
 function canICheck (roundActions, playerId) {
-  if (roundActions.length < 1) {
+  if (roundActions.length < NUM_BUY_IN_ROUNDS) {
     return [false, undefined];
   }
 
@@ -23,8 +25,7 @@ function canICheck (roundActions, playerId) {
 }
 
 function canICall (roundActions, playerId, bettingValue) {
-  // Assert that you are not the first to bet
-  if (roundActions.length === 0) {
+  if (roundActions.length < NUM_BUY_IN_ROUNDS) {
     console.log('No actions has been performed');
     return [false, undefined];
   }
@@ -51,8 +52,8 @@ function canICall (roundActions, playerId, bettingValue) {
 }
 
 function canIRaise (roundActions, playerId, bettingValue) {
-  if (roundActions.length === 0) {
-    return [true, bettingValue];
+  if (roundActions.length < NUM_BUY_IN_ROUNDS) {
+    return [false, bettingValue];
   }
 
   const [myLastAction, previousBettorAction] = getMyLastActionAndPreviousBettorAction(
@@ -77,7 +78,7 @@ function canIRaise (roundActions, playerId, bettingValue) {
 }
 
 function canIFold (roundActions, playerId) {
-  if (roundActions.length === 0) {
+  if (roundActions.length < NUM_BUY_IN_ROUNDS) {
     return [false, undefined];
   }
 
@@ -99,10 +100,7 @@ function getMyLastActionAndPreviousBettorAction (roundActions, playerId) {
   roundActions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const playerIndex = roundActions.findIndex(action => action.playerId === playerId);
-  let endIndex = playerIndex;
-  if (endIndex === -1) {
-    endIndex = roundActions.length;
-  }
+  const endIndex = playerIndex === -1 ? roundActions.length : playerIndex;
 
   const validRoundActionsFromPlayerLastTurn =
     roundActions
@@ -111,7 +109,7 @@ function getMyLastActionAndPreviousBettorAction (roundActions, playerId) {
 
   return [
     roundActions[playerIndex],
-    validRoundActionsFromPlayerLastTurn[validRoundActionsFromPlayerLastTurn.length - 1]
+    validRoundActionsFromPlayerLastTurn[0]
   ];
 }
 

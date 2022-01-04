@@ -60,7 +60,9 @@ function _getNextAvailableParticipantIndex (participants, currentParticipant) {
   let nextParticipant;
   let nextParticipantIndex;
 
-  const availableTurnOrders = participants.map(p => p.turnOrder);
+  const availableTurnOrders = participants
+    .filter(p => p.participationStatus === PARTICIPATION_STATUSES.PARTICIPATING)
+    .map(p => p.turnOrder);
   const maxTurnOrder = Math.max(...availableTurnOrders);
   const minTurnOrder = Math.min(...availableTurnOrders);
 

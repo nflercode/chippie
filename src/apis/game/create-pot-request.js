@@ -1,6 +1,6 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import potRequestHandler from '../../handlers/pot-request-handler.js';
+import potRequestHandler from '../../handlers/api-handlers/pot-request-handler.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 

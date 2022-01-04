@@ -1,9 +1,9 @@
-import API_STATUS_CODES from '../constants/api-status-codes.js';
-import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
-import chipService from '../services/chip-service.js';
-import chipsCommonHandler from './commons/chips-common-handler.js';
-import commonHandler from './commons/common-handler.js';
-import gameHandler from './game-handler.js';
+import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import chipService from '../../services/chip-service.js';
+import chipsCommonHandler from '../commons/chips-common-handler.js';
+import commonHandler from '../commons/common-handler.js';
+import gameHandler from '../game-handler.js';
 
 async function exchange (tableId, playerId, chipsToAdd) {
   const ongoingGame = await gameHandler.getOngoingGame(tableId, playerId);

@@ -1,15 +1,15 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import gameHandler from '../../handlers/game-handler.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import createGameHandler from '../../handlers/api-handlers/create-game-handler.js';
 
 function register (app) {
   app.post(`/${API_PREFIX}/game`, jwtAuth, async (req, res) => {
     const { tableId, playerId } = req.auth;
 
     try {
-      await gameHandler.createGame(tableId, playerId);
+      await createGameHandler.doCreateGame(tableId, playerId);
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res

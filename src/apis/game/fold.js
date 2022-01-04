@@ -1,6 +1,6 @@
 import { jwtAuth } from '../middlewares/jwtAuthentication.js';
 import { API_PREFIX, createErrorPayload } from '../common/common-payloads.js';
-import foldHandler from '../../handlers/fold-handler.js';
+import foldHandler from '../../handlers/api-handlers/fold-handler.js';
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 

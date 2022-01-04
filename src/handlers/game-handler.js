@@ -2,104 +2,31 @@ import API_STATUS_CODES from '../constants/api-status-codes.js';
 import { GAME_STATUSES } from '../constants/game-statuses.js';
 import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
 import gameService from '../services/game-service.js';
-import playerService from '../services/player-service.js';
 import chipService from '../services/chip-service.js';
-import { DEFAULT_DISTRIBUTION } from './chip-distribution-configs.js';
 import commonHandler from './commons/common-handler.js';
 import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
-
-async function createGame (tableId, playerId) {
-  const ongoingGame = await _getOngoingGame(tableId);
-  if (ongoingGame) {
-    throw new ClientFriendlyException(
-      'Game already has an ongoing game',
-      API_STATUS_CODES.BAD_REQUEST
-    );
-  }
-
-  const players = await playerService.findPlayers(tableId);
-  if (!players || players.length < 1) {
-    throw new ClientFriendlyException(
-      'There are no players',
-      API_STATUS_CODES.BAD_REQUEST
-    );
-  }
-
-  const startingChips = await _getStartingChips();
-  const participants = _createParticipants(players, startingChips);
-
-  await gameService.createGame(tableId, participants, playerId);
-}
-
-async function closeGame (gameId, playerId) {
-  const game = await commonHandler.getGame(gameId);
-
-  // Assert is member of game
-  commonHandler.getParticipantIndex(game.participants, playerId);
-
-  game.status = GAME_STATUSES.CLOSED;
-  game.closedBy = playerId;
-
-  await commonHandler.updateGame(game);
-}
-
-async function getOngoingGame (tableId, playerId) {
-  const ongoingGame = await _getOngoingGame(tableId);
-  if (!ongoingGame) {
-    throw new ClientFriendlyException(
-      'No ongoing game was found',
-      API_STATUS_CODES.NOT_FOUND
-    );
-  }
-
-  // Assert is member of game
-  commonHandler.getParticipantIndex(ongoingGame.participants, playerId);
-
-  return ongoingGame;
-}
+import { PARTICIPANT_SEATS } from '../constants/participant-seats.js';
+import chipsCommonHandler from './commons/chips-common-handler.js';
+import { BUY_IN_PRICES } from '../constants/buy-in-prices.js';
 
 async function nextRound (gameId, playerId) {
-  console.log('Going to next round for game ', gameId);
+  console.log('Going to next round for game', gameId);
   const game = await commonHandler.getGame(gameId);
 
   commonHandler.getParticipantIndex(game.participants, playerId);
 
   game.round++;
 
-  game.participants = game.participants.map((p) => {
-    let newParticipationStatus = p.participationStatus;
-    if (p.participationStatus === PARTICIPATION_STATUSES.FOLDED) {
-      newParticipationStatus = PARTICIPATION_STATUSES.PARTICIPATING;
-    }
-
-    if (p.participationStatus === PARTICIPATION_STATUSES.NO_CHIPS) {
-      const isOutOfChips = p.chips.every(chip => chip.amount === 0);
-      if (!isOutOfChips) {
-        newParticipationStatus = PARTICIPATION_STATUSES.PARTICIPATING;
-      } else {
-        const numCurrentPlacings = game.participants.filter(({ placing }) => !!placing).length;
-        const nextPlacing = game.participants.length - numCurrentPlacings;
-        p.placing = nextPlacing;
-      }
-    }
-
-    return {
-      ...p,
-      participationStatus: newParticipationStatus,
-      isCurrentTurn: false,
-      turnOrder:
-        newParticipationStatus !== PARTICIPATION_STATUSES.PARTICIPATING
-          ? undefined
-          : p.turnOrder
-    };
-  });
+  game.participants = await _mapNewParticipantsStatuses(game.participants);
 
   const activeParticipants =
     game.participants.filter(
       p => p.participationStatus === PARTICIPATION_STATUSES.PARTICIPATING
     );
 
-  if (activeParticipants.length === 1) {
+  const numActiveParticipants = activeParticipants.length;
+  let smallBuyInParticipant;
+  if (numActiveParticipants === 1) {
     activeParticipants[0].placing = 1;
     game.status = GAME_STATUSES.ENDED;
   } else {
@@ -113,15 +40,35 @@ async function nextRound (gameId, playerId) {
     activeParticipants.forEach(p => {
       p.turnOrder = turnOrder;
       p.isCurrentTurn = turnOrder === minTurnOrder;
+      p.seat = getSeatByTurnOrder(turnOrder, numActiveParticipants);
+      if (p.seat === PARTICIPANT_SEATS.SMALL_BLIND) {
+        smallBuyInParticipant = p;
+      }
 
       turnOrder++;
     });
   }
 
+  activeParticipants
+    .sort((a, b) => a.totalChipValue - b.totalChipValue);
+
+  const lowestTotalChipValue = activeParticipants[0].totalChipValue;
+  if (lowestTotalChipValue < game.bigBuyIn) {
+    game.bigBuyIn = lowestTotalChipValue;
+  } else {
+    game.bigBuyIn = BUY_IN_PRICES.BIG_BUY_IN;
+  }
+
+  if (smallBuyInParticipant?.totalChipValue < game.smallBuyIn) {
+    game.smallBuyIn = smallBuyInParticipant.totalChipValue;
+  } else {
+    game.smallBuyIn = BUY_IN_PRICES.SMALL_BUY_IN;
+  }
+
   await commonHandler.updateGame(game);
 }
 
-async function _getOngoingGame (tableId) {
+async function getOngoingGame (tableId) {
   const games = await gameService.findGamesForTable(tableId);
   if (!games) {
     return;
@@ -140,50 +87,57 @@ async function _getOngoingGame (tableId) {
   );
 }
 
-async function _getStartingChips () {
-  const allChips = await chipService.getAllChips();
-  if (!allChips || allChips.length === 0) {
-    throw new ClientFriendlyException(
-      'Failed to get chips',
-      API_STATUS_CODES.INTERNAL_ERROR
-    );
-  }
+async function _mapNewParticipantsStatuses (participants) {
+  const actualChips = await chipService.getAllChips();
 
-  const distributionConfigMerged = allChips.map((chip) => {
-    const currentConfig = DEFAULT_DISTRIBUTION[chip.type];
-    if (currentConfig) {
-      return {
-        chipId: chip.id,
-        amount: currentConfig.amount
-      };
+  return participants.map((participant) => {
+    let newParticipationStatus, newPlacing;
+
+    const totalChipValue = getTotalValueOfChips(participant.chips, actualChips);
+    if (totalChipValue !== 0) {
+      newParticipationStatus = PARTICIPATION_STATUSES.PARTICIPATING;
+    } else {
+      const numCurrentPlacings = participants.filter(({ placing }) => !!placing).length;
+      newPlacing = participants.length - numCurrentPlacings;
+      newParticipationStatus = PARTICIPATION_STATUSES.NO_CHIPS;
     }
 
-    return undefined;
-  }).filter(Boolean);
-
-  return distributionConfigMerged;
+    return {
+      ...participant,
+      participationStatus: newParticipationStatus,
+      isCurrentTurn: false,
+      seat: undefined,
+      totalChipValue,
+      placing: newPlacing,
+      turnOrder:
+        newParticipationStatus !== PARTICIPATION_STATUSES.PARTICIPATING
+          ? undefined
+          : participant.turnOrder
+    };
+  });
 }
 
-function _createParticipants (players, startingChips) {
-  const playerIds = players.map((p) => p.id);
-  const participants =
-    playerIds
-      .sort(() => Math.random() - 0.5)
-      .map((playerId, i) => ({
-        playerId,
-        turnOrder: ++i,
-        isCurrentTurn: i === 1,
-        participationStatus: PARTICIPATION_STATUSES.PARTICIPATING,
-        chips: startingChips
-      }));
+function getTotalValueOfChips (chips, actualChips) {
+  const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(chips, actualChips);
+  return chipsCommonHandler.getBettedValueFromChips(bettingChipsWithValue);
+}
 
-  return participants;
+function getSeatByTurnOrder (turnOrder, maxTurnOrder) {
+  switch (turnOrder) {
+    case 1:
+      return PARTICIPANT_SEATS.SMALL_BLIND;
+    case 2:
+      return PARTICIPANT_SEATS.BIG_BLIND;
+    case maxTurnOrder:
+      return PARTICIPANT_SEATS.DEALER;
+    default:
+      return PARTICIPANT_SEATS.UNDEFINED;
+  }
 }
 
 const gameHandler = {
-  createGame,
   getOngoingGame,
-  closeGame,
+  getSeatByTurnOrder,
   nextRound
 };
 export default gameHandler;

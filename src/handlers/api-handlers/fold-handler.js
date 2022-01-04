@@ -1,10 +1,10 @@
-import { PLAYER_ACTIONS } from '../constants/player-actions.js';
-import commonHandler from './commons/common-handler.js';
-import actionsCommonHandler from './commons/actions-common-handler.js';
-import rules from './rules.js';
-import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
-import API_STATUS_CODES from '../constants/api-status-codes.js';
-import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
+import { PLAYER_ACTIONS } from '../../constants/player-actions.js';
+import commonHandler from '../commons/common-handler.js';
+import actionsCommonHandler from '../commons/actions-common-handler.js';
+import rules from '../rules.js';
+import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import API_STATUS_CODES from '../../constants/api-status-codes.js';
+import { PARTICIPATION_STATUSES } from '../../constants/participation-statuses.js';
 
 async function doFold (playerId, gameId) {
   console.log(`Performing fold for player ${playerId}`);
