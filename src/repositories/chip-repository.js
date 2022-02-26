@@ -11,37 +11,13 @@ const Chip = t.createModel('Chip', {
   imgName: t.type.string().optional()
 });
 
-const defaultChips = [
-  {
-    type: CHIP_TYPES.WHITE,
-    value: 10
-  },
-  {
-    type: CHIP_TYPES.RED,
-    value: 50
-  },
-  {
-    type: CHIP_TYPES.BLUE,
-    value: 100
-  },
-  {
-    type: CHIP_TYPES.GREEN,
-    value: 250
-  },
-  {
-    type: CHIP_TYPES.BLACK,
-    value: 1000
-  }
-];
-
-async function createDefaultChips () {
-  await Chip.save(defaultChips);
-  console.log('Default chip has been created!');
+async function create (chips) {
+  return await Chip.save(chips);
 }
 
 async function getAllChips () {
   return Chip.run();
 }
 
-const chipRepository = { createDefaultChips, getAllChips, Chip };
+const chipRepository = { create, getAllChips, Chip };
 export default chipRepository;

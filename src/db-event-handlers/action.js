@@ -21,7 +21,7 @@ function start () {
 
 async function handleCreate (event) {
   const { gameId } = event.doc;
-  const game = await gameService.getGame(gameId);
+  const game = await gameService.get(gameId);
 
   const room = getRoomName(game.tableId);
   io.to(room).emit('action-created', event.doc);

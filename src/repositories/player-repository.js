@@ -13,13 +13,9 @@ const Player = t.createModel('Player', {
   updatedAt: t.type.date()
 });
 
-async function findPlayers (tableId) {
+async function find (tableId) {
   return Player.filter({ tableId }).run();
 }
 
-async function getPlayer (playerId) {
-  return Player.get(playerId).run();
-}
-
-const playerRepository = { findPlayers, getPlayer };
+const playerRepository = { find };
 export default playerRepository;

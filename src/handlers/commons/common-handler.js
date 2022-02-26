@@ -3,10 +3,10 @@ import gameService from '../../services/game-service.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import { PARTICIPATION_STATUSES } from '../../constants/participation-statuses.js';
 
-async function getGame (gameId) {
-  const game = await gameService.getGame(gameId);
+async function getOngoingGame (tableId) {
+  const game = await gameService.get(tableId);
   if (!game) {
-    console.error(`Game was not found with id ${gameId}`);
+    console.error(`Game was not found with id ${tableId}`);
     throw new ClientFriendlyException(
       'Game was not found',
       API_STATUS_CODES.NOT_FOUND
@@ -17,7 +17,7 @@ async function getGame (gameId) {
 }
 
 async function updateGame (game) {
-  const updatedGame = await gameService.updateGame(game);
+  const updatedGame = await gameService.update(game);
   if (!updatedGame) {
     console.error(`Failed to update game for game: ${game.id}`);
     throw new ClientFriendlyException(
@@ -29,9 +29,9 @@ async function updateGame (game) {
   return updatedGame;
 }
 
-function getParticipantIndex (participants, playerId) {
-  const participantIndex = participants.findIndex((p) => p.playerId === playerId);
-  if (!participantIndex === -1) {
+function getParticipant (participants, playerId) {
+  const index = participants.findIndex((p) => p.playerId === playerId);
+  if (!index === -1) {
     console.error(`Participant was not found with playerId ${playerId}`);
     throw new ClientFriendlyException(
       'Participant was not found',
@@ -39,14 +39,14 @@ function getParticipantIndex (participants, playerId) {
     );
   }
 
-  return participantIndex;
+  const participant = participants[index];
+  return [participant, index];
 }
 
-function switchParticipantTurn (participants, currentParticipantIndex) {
-  const currentParticipant = participants[currentParticipantIndex];
-  participants[currentParticipantIndex].isCurrentTurn = false;
+function switchParticipantTurn (participants, participant) {
+  participant.isCurrentTurn = false;
 
-  const nextParticipantIndex = _getNextAvailableParticipantIndex(participants, currentParticipant);
+  const nextParticipantIndex = _getNextAvailableParticipantIndex(participants, participant);
   if (nextParticipantIndex !== -1) {
     participants[nextParticipantIndex].isCurrentTurn = true;
   } else {
@@ -111,9 +111,9 @@ function assertIsCurrentTurn (participant) {
 }
 
 const commonHandler = {
-  getGame,
+  getOngoingGame,
   updateGame,
-  getParticipantIndex,
+  getParticipant,
   assertIsCurrentTurn,
   switchParticipantTurn
 };

@@ -5,10 +5,11 @@ import http from 'http';
 import apiLoader from './apis/api-loader.js';
 import { connect as connectSocket } from './sockets/tableSocket.js';
 import { isProductionEnvironment, isPrEnvironment, assumeLocal } from './helpers/environment-helper.js';
-import chipRepository from './repositories/chip-repository.js';
 import dbEventHandlerGame from './db-event-handlers/game.js';
 import dbEventHandlerAction from './db-event-handlers/action.js';
 import dbEventHandlerPotRequest from './db-event-handlers/pot-request.js';
+import { connect as connectToRedis } from './cache/client.js';
+import chipService from './services/chip-service.js';
 
 const allowedOrigins = [];
 
@@ -41,15 +42,20 @@ app.use(cors({
   }
 }));
 
-async function createDefaultChips () {
-  const chips = await chipRepository.getAllChips();
-  if (!chips || chips.length === 0) { chipRepository.createDefaultChips(); } else { console.log('Chips already exist'); }
-}
+(async () => {
+  await connectToRedis();
+
+  const chips = await chipService.getAllChips();
+  if (!chips || chips.length === 0) {
+    chipService.createDefaultChips();
+  } else {
+    console.log('Chips already exist');
+  }
+})();
 
 const httpServer = http.createServer(app);
 connectSocket(httpServer, allowedOrigins);
 
-createDefaultChips();
 dbEventHandlerGame.start();
 dbEventHandlerAction.start();
 dbEventHandlerPotRequest.start();

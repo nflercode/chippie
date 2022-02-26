@@ -5,12 +5,11 @@ import { ClientFriendlyException } from '../../exceptions/ClientFriendlyExceptio
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 
 function register (app) {
-  app.post(`/${API_PREFIX}/game/:gameId/pot-requests`, jwtAuth, async (req, res) => {
-    const { gameId } = req.params;
-    const { playerId } = req.auth;
+  app.post(`/${API_PREFIX}/game/pot-requests`, jwtAuth, async (req, res) => {
+    const { playerId, tableId } = req.auth;
 
     try {
-      await potRequestHandler.createPotRequest(gameId, playerId);
+      await potRequestHandler.createPotRequest(tableId, playerId);
     } catch (err) {
       if (err instanceof ClientFriendlyException) {
         return res

@@ -1,10 +1,10 @@
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
 import commonHandler from '../commons/common-handler.js';
-import gameHandler from '../../handlers/game-handler.js';
+import gameService from '../../services/game-service.js';
 
 async function getOngoingGame (tableId, playerId) {
-  const ongoingGame = await gameHandler.getOngoingGame(tableId);
+  const ongoingGame = await gameService.get(tableId);
   if (!ongoingGame) {
     throw new ClientFriendlyException(
       'No ongoing game was found',

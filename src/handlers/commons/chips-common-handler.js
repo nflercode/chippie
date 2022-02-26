@@ -1,7 +1,8 @@
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 import { ClientFriendlyException } from '../../exceptions/ClientFriendlyException.js';
+import chipService from '../../services/chip-service.js';
 
-function subtractChips (chips, chipsToSubtract) {
+function subtract (chips, chipsToSubtract) {
   const chipsSubtracted = chips;
 
   chipsToSubtract.forEach(chipToSubtract => {
@@ -12,10 +13,9 @@ function subtractChips (chips, chipsToSubtract) {
         API_STATUS_CODES.BAD_REQUEST
       );
     }
+
     const chip = chipsSubtracted[chipIndex];
-
     const newAmount = chip.amount - chipToSubtract.amount;
-
     if (newAmount < 0) {
       throw new ClientFriendlyException(
         'Participant tried to subtract too many chips',
@@ -29,7 +29,7 @@ function subtractChips (chips, chipsToSubtract) {
   return chipsSubtracted;
 }
 
-function addChips (chips, chipsToAdd) {
+function add (chips, chipsToAdd) {
   const chipsAdded = chips;
 
   chipsToAdd.forEach(chipToAdd => {
@@ -48,31 +48,32 @@ function addChips (chips, chipsToAdd) {
   return chipsAdded;
 }
 
-function mapBettingChipWithValue (bettingChips, actualChips) {
-  return bettingChips.map((bettingChip) => {
-    const actualChip = actualChips.find((actualChip) => actualChip.id === bettingChip.chipId);
+async function mapWithValue (chips) {
+  const valueChips = await chipService.getAllChips();
+  return chips.map((chip) => {
+    const actualChip = valueChips.find(({ id }) => id === chip.chipId);
     if (!actualChip) {
       throw new ClientFriendlyException(
-        'Unknown chip',
+        'Tried to map chip with value of unknown chip',
         API_STATUS_CODES.BAD_REQUEST
       );
     }
 
     return {
-      ...bettingChip,
+      ...chip,
       value: actualChip.value
     };
   });
 }
 
-function getBettedValueFromChips (chips = []) {
+function getTotalValue (chips = []) {
   return chips.reduce((acc, curr) => acc + (curr.value * curr.amount), 0);
 }
 
 const chipsCommonHandler = {
-  subtractChips,
-  addChips,
-  mapBettingChipWithValue,
-  getBettedValueFromChips
+  subtract,
+  add,
+  mapWithValue,
+  getTotalValue
 };
 export default chipsCommonHandler;

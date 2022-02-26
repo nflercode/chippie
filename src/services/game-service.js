@@ -1,37 +1,59 @@
+import { getOrSet, set, del as delInCache } from '../cache/client.js';
 import gameRepository from '../repositories/game-repository.js';
 
-async function createGame (tableId, participants, createdByPlayerId) {
+async function create (tableId, participants, createdByPlayerId) {
   try {
-    const createdGame = await gameRepository.createGame(tableId, participants, createdByPlayerId);
+    const createdGame = await gameRepository.create(tableId, participants, createdByPlayerId);
+
+    const cacheKeyWithTableId = generateCacheKey(tableId);
+    await set(cacheKeyWithTableId, createdGame);
+
     return createdGame;
   } catch (err) {
     console.error('Failed to create game.', err);
   }
 }
 
-async function getGame (gameId) {
+async function get (tableId) {
   try {
-    return await gameRepository.getGame(gameId);
+    const cacheKeyWithTableId = generateCacheKey(tableId);
+    return await getOrSet(cacheKeyWithTableId, async () => {
+      const games = gameRepository.find(tableId);
+      return games[0];
+    });
   } catch (err) {
-    console.error('Failed to get game', gameId);
+    console.error('Failed to get ongoing game for tableId', tableId);
   }
 }
 
-async function findGamesForTable (tableId) {
+async function update (game) {
   try {
-    return await gameRepository.getByTableId(tableId);
-  } catch (err) {
-    console.error('Failed to get game', tableId);
-  }
-}
+    const updatedGame = await gameRepository.update(game);
 
-async function updateGame (game) {
-  try {
-    return await gameRepository.updateGame(game);
+    const cacheKeyWithTableId = generateCacheKey(game.tableId);
+    await set(cacheKeyWithTableId, updatedGame);
+
+    return updatedGame;
   } catch (err) {
     console.error('Failed to update game', err);
   }
 }
 
-const gameService = { createGame, getGame, updateGame, findGamesForTable };
+async function del (game) {
+  try {
+    await gameRepository.del(game.id);
+
+    const cacheKeyWithTableId = generateCacheKey(game.tableId);
+    await delInCache(cacheKeyWithTableId);
+  } catch (err) {
+    console.error('Failed to remove game', err);
+  }
+}
+
+function generateCacheKey (tableId) {
+  const cacheKey = 'ongoingGame';
+  return `${cacheKey}_${tableId}`;
+}
+
+const gameService = { create, get, update, del };
 export default gameService;

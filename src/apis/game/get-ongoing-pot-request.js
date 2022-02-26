@@ -5,12 +5,11 @@ import { ClientFriendlyException } from '../../exceptions/ClientFriendlyExceptio
 import API_STATUS_CODES from '../../constants/api-status-codes.js';
 
 function register (app) {
-  app.get(`/${API_PREFIX}/game/:gameId/pot-requests/ongoing`, jwtAuth, async (req, res) => {
-    const { gameId } = req.params;
-    const { playerId } = req.auth;
+  app.get(`/${API_PREFIX}/game/pot-requests/ongoing`, jwtAuth, async (req, res) => {
+    const { playerId, tableId } = req.auth;
 
     try {
-      const ongoingPotRequest = await potRequestHandler.getOngoingPotRequest(gameId, playerId);
+      const ongoingPotRequest = await potRequestHandler.getOngoingPotRequest(tableId, playerId);
       res.send({
         potRequest: ongoingPotRequest
       });

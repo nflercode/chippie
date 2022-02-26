@@ -17,7 +17,7 @@ async function doCall (gameId, playerId, bettingChips) {
   commonHandler.assertIsCurrentTurn(participant);
 
   const actualChips = await chipService.getAllChips();
-  const gameActions = await actionService.findActionsForGame(gameId, game.round);
+  const gameActions = await actionService.findForGameRound(gameId, game.round);
 
   const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(bettingChips, actualChips);
   const bettedValue = chipsCommonHandler.getBettedValueFromChips(bettingChipsWithValue);

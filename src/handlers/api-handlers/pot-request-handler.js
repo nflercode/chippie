@@ -7,19 +7,19 @@ import chipsCommonHandler from '../commons/chips-common-handler.js';
 import commonHandler from '../commons/common-handler.js';
 import gameHandler from '../game-handler.js';
 
-async function createPotRequest (gameId, playerId) {
-  const ongoingPotRequest = await _getOngoingPotRequest(gameId);
+async function createPotRequest (tableId, playerId) {
+  const game = await commonHandler.getOngoingGame(tableId);
+
+  // Assert is member of game
+  commonHandler.getParticipant(game.participants, playerId);
+
+  const ongoingPotRequest = await potRequestService.get(game.id);
   if (ongoingPotRequest) {
     throw new ClientFriendlyException(
       'There is already an ongoing pot request',
       API_STATUS_CODES.BAD_REQUEST
     );
   }
-
-  const game = await commonHandler.getGame(gameId);
-
-  // Assert is member of game
-  commonHandler.getParticipantIndex(game.participants, playerId);
 
   const participantsAnswers = game
     .participants
@@ -29,11 +29,13 @@ async function createPotRequest (gameId, playerId) {
       answer: POT_REQUEST_STATUS.AWAITING
     }));
 
-  await potRequestService.createPotRequest(game.tableId, gameId, playerId, participantsAnswers);
+  await potRequestService.create(tableId, game.id, playerId, participantsAnswers);
 }
 
-async function updatePotRequest (potRequestId, tableId, playerId, answer) {
-  const potRequest = await potRequestService.getRequest(potRequestId);
+async function updatePotRequest (tableId, playerId, answer) {
+  const game = await commonHandler.getOngoingGame(tableId);
+  const potRequest = await potRequestService.get(game.id);
+
   const participantAnswerIndex = potRequest.participantAnswers.findIndex(pa => pa.playerId === playerId);
   if (participantAnswerIndex === -1) {
     throw new ClientFriendlyException(
@@ -60,16 +62,16 @@ async function updatePotRequest (potRequestId, tableId, playerId, answer) {
 
   answeringParticipant.answer = givenAnswer;
 
-  let game;
   if (givenAnswer === POT_REQUEST_PLAYER_ANSWERS.NO) {
     potRequest.status = POT_REQUEST_STATUS.REJECTED;
+
+    await potRequestService.update(potRequest);
   } else {
     const allOk =
       potRequest.participantAnswers.every(pa => pa.answer === POT_REQUEST_PLAYER_ANSWERS.OK);
 
     if (allOk) {
       potRequest.status = POT_REQUEST_STATUS.APPROVED;
-      game = await gameHandler.getOngoingGame(tableId);
 
       const payoutParticipantIndex =
         game.participants.findIndex(p => p.playerId === potRequest.playerId);
@@ -79,42 +81,21 @@ async function updatePotRequest (potRequestId, tableId, playerId, answer) {
 
       game.pot = [];
     }
-  }
 
-  await potRequestService.updateRequest(potRequest);
-  if (game) {
+    await potRequestService.update(potRequest);
     await commonHandler.updateGame(game);
     await gameHandler.nextRound(game.id, playerId);
   }
 }
 
-async function getOngoingPotRequest (gameId, playerId) {
+async function getOngoingPotRequest (tableId, playerId) {
   // Assert game exists
-  const game = await commonHandler.getGame(gameId);
+  const game = await commonHandler.getOngoingGame(tableId);
 
   // Assert is member of game
-  commonHandler.getParticipantIndex(game.participants, playerId);
+  commonHandler.getParticipant(game.participants, playerId);
 
-  const ongoingPotRequest = await _getOngoingPotRequest(gameId);
-
-  return ongoingPotRequest;
-}
-
-async function _getOngoingPotRequest (gameId) {
-  const requests = await potRequestService.findRequestsForGame(gameId);
-  const awaitingRequests = (requests || [])
-    .filter((request) => request.status === POT_REQUEST_STATUS.AWAITING);
-
-  if (awaitingRequests.length === 0) {
-    return;
-  } else if (awaitingRequests.length === 1) {
-    return awaitingRequests[0];
-  }
-
-  throw new ClientFriendlyException(
-    'There are multiple awaiting pot-requests',
-    API_STATUS_CODES.BAD_REQUEST
-  );
+  return await potRequestService.get(game.id);
 }
 
 const potRequestHandler = { createPotRequest, getOngoingPotRequest, updatePotRequest };

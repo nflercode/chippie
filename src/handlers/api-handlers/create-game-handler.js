@@ -27,7 +27,7 @@ async function doCreateGame (tableId, playerId) {
   const startingChips = await _getStartingChips();
   const participants = _createParticipants(players, startingChips);
 
-  await gameService.createGame(tableId, participants, playerId);
+  await gameService.create(tableId, participants, playerId);
 }
 
 async function _getStartingChips () {

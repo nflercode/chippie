@@ -7,50 +7,54 @@ import chipsCommonHandler from '../commons/chips-common-handler.js';
 import actionService from '../../services/action-service.js';
 import gameHandler from '../game-handler.js';
 import { PARTICIPANT_SEATS } from '../../constants/participant-seats.js';
-import chipService from '../../services/chip-service.js';
 import { PARTICIPATION_STATUSES } from '../../constants/participation-statuses.js';
 
 async function doBuyIn (tableId, playerId, bettingChips) {
   const game = await gameHandler.getOngoingGame(tableId);
-
-  const participantIndex = commonHandler.getParticipantIndex(game.participants, playerId);
-  const participant = game.participants[participantIndex];
+  const [participant] = commonHandler.getParticipant(game.participants, playerId);
 
   commonHandler.assertIsCurrentTurn(participant);
 
-  const actualChips = await chipService.getAllChips();
-  const bettingChipsWithValue = chipsCommonHandler.mapBettingChipWithValue(bettingChips, actualChips);
-  const bettingValue = chipsCommonHandler.getBettedValueFromChips(bettingChipsWithValue);
-
-  const gameActions = await actionService.findActionsForGame(game.id, game.round);
+  const { mapWithValue, getTotalValue } = chipsCommonHandler;
+  const [bettingValue, gameActions] = await Promise.all([
+    mapWithValue(bettingChips).then(getTotalValue),
+    actionService.findForGameRound(game.id, game.round)
+  ]);
 
   const notEnoughToBuyInText = 'Participant did not bet enough to buy in';
-  if (gameActions.length === 0 && participant.seat === PARTICIPANT_SEATS.SMALL_BLIND) {
-    if (bettingValue !== game.smallBuyIn) {
+  const { SMALL_BLIND, BIG_BLIND } = PARTICIPANT_SEATS;
+  switch (gameActions.length) {
+    case 0:
+      if (participant.seat === SMALL_BLIND && bettingValue !== game.smallBuyIn) {
+        throw new ClientFriendlyException(
+          notEnoughToBuyInText,
+          API_STATUS_CODES.BAD_REQUEST
+        );
+      }
+      break;
+
+    case 1:
+      if (participant.seat === BIG_BLIND && bettingValue !== game.bigBuyIn) {
+        throw new ClientFriendlyException(
+          notEnoughToBuyInText,
+          API_STATUS_CODES.BAD_REQUEST
+        );
+      }
+      break;
+
+    default:
       throw new ClientFriendlyException(
-        notEnoughToBuyInText,
+        'Participant cant buy in',
         API_STATUS_CODES.BAD_REQUEST);
-    }
-  } else if (gameActions.length === 1 && participant.seat === PARTICIPANT_SEATS.BIG_BLIND) {
-    if (bettingValue !== game.bigBuyIn) {
-      throw new ClientFriendlyException(
-        notEnoughToBuyInText,
-        API_STATUS_CODES.BAD_REQUEST);
-    }
-  } else {
-    throw new ClientFriendlyException(
-      'Participant cant buy in',
-      API_STATUS_CODES.BAD_REQUEST);
   }
 
-  chipsCommonHandler.subtractChips(participant.chips, bettingChips);
-  chipsCommonHandler.addChips(game.pot, bettingChips);
+  gameHandler.bet(game, participant, bettingChips);
 
   if (participant.chips.every(chip => chip.amount === 0)) {
     participant.participationStatus = PARTICIPATION_STATUSES.NO_CHIPS;
   }
 
-  commonHandler.switchParticipantTurn(game.participants, participantIndex);
+  commonHandler.switchParticipantTurn(game.participants, participant);
 
   const newAction = {
     gameId: game.id,

@@ -1,38 +1,48 @@
+import { getOrSet, set } from '../cache/client.js';
 import potRequestRepository from '../repositories/pot-request-repository.js';
 
-async function createPotRequest (tableId, gameId, playerId, participantAnswers) {
+async function create (tableId, gameId, playerId, participantAnswers) {
   try {
-    const createPotRequest = await potRequestRepository.createPotRequest(tableId, gameId, playerId, participantAnswers);
-    return createPotRequest;
+    const newPotRequest = await potRequestRepository.create(tableId, gameId, playerId, participantAnswers);
+
+    const cacheKey = generateCacheKey(gameId);
+    await set(cacheKey, newPotRequest);
+
+    return newPotRequest;
   } catch (err) {
     console.error('Failed to create pot request.', err);
   }
 }
 
-async function findRequestsForGame (gameId) {
+async function get (gameId) {
   try {
-    const requests = await potRequestRepository.getByGameId(gameId);
-    return requests;
+    const cacheKey = generateCacheKey(gameId);
+    return await getOrSet(cacheKey, async () => {
+      const potRequests = await potRequestRepository.find(gameId)[0];
+      return potRequests[0];
+    });
   } catch (err) {
     console.error('Failed to find ongoing request', err);
   }
 }
 
-async function getRequest (requestId) {
+async function update (request) {
   try {
-    return await potRequestRepository.getRequest(requestId);
-  } catch (err) {
-    console.error('Failed to find ongoing request', err);
-  }
-}
+    const updatedPotRequest = await potRequestRepository.update(request);
 
-async function updateRequest (request) {
-  try {
-    return await potRequestRepository.updatePotRequest(request);
+    const cacheKey = generateCacheKey(request.gameId);
+    await set(cacheKey, updatedPotRequest);
+
+    return updatedPotRequest;
   } catch (err) {
     console.error('Failed to update request', err);
   }
 }
 
-const potRequestService = { createPotRequest, findRequestsForGame, updateRequest, getRequest };
+function generateCacheKey (gameId) {
+  const cacheKey = 'potRequest';
+  return `${cacheKey}_${gameId}`;
+}
+
+const potRequestService = { create, get, update };
 export default potRequestService;

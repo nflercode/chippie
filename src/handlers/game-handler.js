@@ -1,19 +1,18 @@
-import API_STATUS_CODES from '../constants/api-status-codes.js';
 import { GAME_STATUSES } from '../constants/game-statuses.js';
-import { ClientFriendlyException } from '../exceptions/ClientFriendlyException.js';
-import gameService from '../services/game-service.js';
 import chipService from '../services/chip-service.js';
 import commonHandler from './commons/common-handler.js';
 import { PARTICIPATION_STATUSES } from '../constants/participation-statuses.js';
 import { PARTICIPANT_SEATS } from '../constants/participant-seats.js';
 import chipsCommonHandler from './commons/chips-common-handler.js';
 import { BUY_IN_PRICES } from '../constants/buy-in-prices.js';
+import historyGameService from '../services/history-game-service.js';
+import gameService from '../services/game-service.js';
 
 async function nextRound (gameId, playerId) {
   console.log('Going to next round for game', gameId);
   const game = await commonHandler.getGame(gameId);
 
-  commonHandler.getParticipantIndex(game.participants, playerId);
+  commonHandler.getParticipant(game.participants, playerId);
 
   game.round++;
 
@@ -29,6 +28,9 @@ async function nextRound (gameId, playerId) {
   if (numActiveParticipants === 1) {
     activeParticipants[0].placing = 1;
     game.status = GAME_STATUSES.ENDED;
+
+    await historyGameService.create(game);
+    await gameService.del(game);
   } else {
     const minTurnOrder = 1;
     let turnOrder = minTurnOrder;
@@ -47,44 +49,25 @@ async function nextRound (gameId, playerId) {
 
       turnOrder++;
     });
+
+    activeParticipants
+      .sort((a, b) => a.totalChipValue - b.totalChipValue);
+
+    const lowestTotalChipValue = activeParticipants[0].totalChipValue;
+    if (lowestTotalChipValue < game.bigBuyIn) {
+      game.bigBuyIn = lowestTotalChipValue;
+    } else {
+      game.bigBuyIn = BUY_IN_PRICES.BIG_BUY_IN;
+    }
+
+    if (smallBuyInParticipant?.totalChipValue < game.smallBuyIn) {
+      game.smallBuyIn = smallBuyInParticipant.totalChipValue;
+    } else {
+      game.smallBuyIn = BUY_IN_PRICES.SMALL_BUY_IN;
+    }
+
+    await commonHandler.updateGame(game);
   }
-
-  activeParticipants
-    .sort((a, b) => a.totalChipValue - b.totalChipValue);
-
-  const lowestTotalChipValue = activeParticipants[0].totalChipValue;
-  if (lowestTotalChipValue < game.bigBuyIn) {
-    game.bigBuyIn = lowestTotalChipValue;
-  } else {
-    game.bigBuyIn = BUY_IN_PRICES.BIG_BUY_IN;
-  }
-
-  if (smallBuyInParticipant?.totalChipValue < game.smallBuyIn) {
-    game.smallBuyIn = smallBuyInParticipant.totalChipValue;
-  } else {
-    game.smallBuyIn = BUY_IN_PRICES.SMALL_BUY_IN;
-  }
-
-  await commonHandler.updateGame(game);
-}
-
-async function getOngoingGame (tableId) {
-  const games = await gameService.findGamesForTable(tableId);
-  if (!games) {
-    return;
-  }
-
-  const ongoingGames = games.filter((game) => game.status === GAME_STATUSES.ONGOING);
-  if (ongoingGames.length === 0) {
-    return;
-  } else if (ongoingGames.length === 1) {
-    return ongoingGames[0];
-  }
-
-  throw new ClientFriendlyException(
-    'There are multiple ongoing games',
-    API_STATUS_CODES.BAD_REQUEST
-  );
 }
 
 async function _mapNewParticipantsStatuses (participants) {
@@ -135,9 +118,14 @@ function getSeatByTurnOrder (turnOrder, maxTurnOrder) {
   }
 }
 
+function bet (game, participant, chips) {
+  chipsCommonHandler.subtract(participant.chips, chips);
+  chipsCommonHandler.add(game.pot, chips);
+}
+
 const gameHandler = {
-  getOngoingGame,
   getSeatByTurnOrder,
-  nextRound
+  nextRound,
+  bet
 };
 export default gameHandler;
